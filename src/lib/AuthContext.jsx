@@ -70,10 +70,8 @@ export const AuthProvider = ({ children }) => {
             });
           }
         } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
-          });
+          // Network error or other non-auth error — don't block the app
+          console.warn('Non-blocking app state error:', appError.message);
         }
         setIsLoadingPublicSettings(false);
         setIsLoadingAuth(false);
@@ -111,6 +109,7 @@ export const AuthProvider = ({ children }) => {
           message: 'Authentication required'
         });
       }
+      // Network errors (no connectivity, CORS, etc.) — don't block the app
     }
   };
 
