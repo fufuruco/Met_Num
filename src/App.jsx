@@ -6,7 +6,13 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import AppLayout from '@/components/layout/AppLayout';
+import Home from '@/pages/Home';
+import NonLinear from '@/pages/NonLinear';
+import Matrices from '@/pages/Matrices';
+import LinearSystems from '@/pages/LinearSystems';
+import Integration from '@/pages/Integration';
+import ODE from '@/pages/ODE';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,7 +40,14 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/nonlinear" element={<NonLinear />} />
+        <Route path="/matrices" element={<Matrices />} />
+        <Route path="/linear-systems" element={<LinearSystems />} />
+        <Route path="/integration" element={<Integration />} />
+        <Route path="/ode" element={<ODE />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
