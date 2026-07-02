@@ -59,6 +59,7 @@ export default function Home() {
           Laboratorio virtual de Métodos Numéricos para estudiantes de ingeniería. 
           Selecciona un módulo para comenzar.
         </p>
+        <p className="text-xs text-muted-foreground/60 mt-1">Jorge Pereira</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
