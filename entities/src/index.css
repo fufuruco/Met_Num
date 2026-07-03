@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark theme premium - deep space */
+    --background: 222 47% 6%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 9%;
+    --card-foreground: 213 31% 91%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 234 89% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 35% 14%;
+    --secondary-foreground: 213 31% 80%;
+    --muted: 222 35% 14%;
+    --muted-foreground: 215 16% 55%;
+    --accent: 174 72% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 35% 16%;
+    --input: 222 35% 14%;
+    --ring: 234 89% 66%;
+    --chart-1: 234 89% 66%;
+    --chart-2: 174 72% 48%;
+    --chart-3: 340 65% 65%;
+    --chart-4: 43 96% 66%;
+    --chart-5: 270 60% 70%;
+    --radius: 0.75rem;
+    --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 213 31% 80%;
+    --sidebar-primary: 234 89% 66%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 35% 12%;
+    --sidebar-accent-foreground: 213 31% 90%;
+    --sidebar-border: 222 35% 12%;
+    --sidebar-ring: 234 89% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    background-image: 
+      radial-gradient(ellipse at top left, hsl(234 89% 66% / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, hsl(174 72% 48% / 0.06) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* Math monospace input */
+.math-input {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(222, 35%, 22%);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(234, 89%, 66%, 0.5);
+}
+
+/* Glass card effect */
+.glass-card {
+  background: hsl(222 47% 9% / 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid hsl(222 35% 18%);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(234, 89%, 75%) 0%, hsl(174, 72%, 58%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effect */
+.glow-primary {
+  box-shadow: 0 0 20px hsl(234 89% 66% / 0.3), 0 0 40px hsl(234 89% 66% / 0.1);
+}
+
+/* Neon border */
+.neon-border {
+  border: 1px solid hsl(234 89% 66% / 0.5);
+  box-shadow: 0 0 10px hsl(234 89% 66% / 0.2), inset 0 0 10px hsl(234 89% 66% / 0.05);
+}
+
+/* Auth background mesh */
+.auth-bg {
+  background: hsl(222 47% 5%);
+  background-image:
+    radial-gradient(ellipse at 20% 20%, hsl(234 89% 66% / 0.12) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 80%, hsl(174 72% 48% / 0.10) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 10%, hsl(270 60% 70% / 0.08) 0%, transparent 30%);
+}
+
+/* Animated gradient border */
+@keyframes border-glow {
+  0%, 100% { border-color: hsl(234 89% 66% / 0.4); }
+  50% { border-color: hsl(174 72% 48% / 0.6); }
+}
+
+.animated-border {
+  animation: border-glow 3s ease-in-out infinite;
+}
+
+/* Card hover glow */
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  border-color: hsl(234 89% 66% / 0.35);
+  box-shadow: 0 8px 32px hsl(234 89% 66% / 0.12), 0 2px 8px hsl(0 0% 0% / 0.3);
+  transform: translateY(-2px);
+}
+
+/* Numeric display */
+.result-display {
+  font-family: 'JetBrains Mono', monospace;
+  background: hsl(222 47% 5%);
+  border: 1px solid hsl(234 89% 66% / 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
