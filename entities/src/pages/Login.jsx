@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { checkUserAuth } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,22 +22,14 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Error en inicio de sesión');
-      }
-
-      window.localStorage.setItem('local_auth_token', data.token);
-      await checkUserAuth();
+      await signInWithEmailAndPassword(auth, email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message || "Correo o contraseña incorrectos");
+      if (err.code === 'auth/invalid-credential') {
+        setError("Correo o contraseña incorrectos");
+      } else {
+        setError(err.message || "Error al iniciar sesión");
+      }
     } finally {
       setLoading(false);
     }
@@ -44,19 +37,13 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch('/api/auth/login-provider', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: 'google' })
-      });
-      const data = await response.json();
-      if (response.ok && data.token) {
-        window.localStorage.setItem('local_auth_token', data.token);
-        await checkUserAuth();
-        navigate('/');
-      }
+      await signInWithPopup(auth, googleProvider);
+      navigate('/');
     } catch (e) {
       console.error(e);
+      if (e.code !== 'auth/popup-closed-by-user') {
+        setError("Error al iniciar sesión con Google.");
+      }
     }
   };
 
@@ -96,7 +83,8 @@ export default function Login() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
       )}

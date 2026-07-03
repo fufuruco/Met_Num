@@ -1,31 +1,31 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-    } catch {
-      // Always show success regardless
+      await sendPasswordResetEmail(auth, email);
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Error al enviar el correo.");
     } finally {
       setLoading(false);
-      setSent(true);
     }
   };
 
@@ -33,7 +33,7 @@ export default function ForgotPassword() {
     <AuthLayout
       icon={Mail}
       title="Recuperar contraseña"
-      subtitle="Te enviaremos las instrucciones a tu correo"
+      subtitle="Te enviaremos un correo oficial para restablecerla"
       footer={
         <Link to="/login" className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors inline-flex items-center gap-1">
           <ArrowLeft className="w-3 h-3" />
@@ -48,11 +48,16 @@ export default function ForgotPassword() {
           </div>
           <p className="text-sm text-foreground font-medium mb-1">¡Correo enviado!</p>
           <p className="text-sm text-muted-foreground">
-            Si existe una cuenta con ese correo, recibirás las instrucciones en breve.
+            Revisa tu bandeja de entrada (o correo no deseado) y sigue las instrucciones.
           </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
+              {error}
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Correo electrónico</Label>
             <div className="relative">
