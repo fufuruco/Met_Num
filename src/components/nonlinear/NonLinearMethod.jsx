@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MathKeyboard from '@/components/shared/MathKeyboard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -82,6 +83,7 @@ const tableColumns = {
 export default function NonLinearMethod({ methodId, methodName }) {
   const [inputs, setInputs] = useState(defaultInputs[methodId]);
   const [result, setResult] = useState(null);
+  const [activeField, setActiveField] = useState('expr'); // which field the keyboard targets
 
   const update = (key, val) => setInputs(prev => ({ ...prev, [key]: val }));
 
@@ -125,14 +127,32 @@ export default function NonLinearMethod({ methodId, methodName }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2 lg:col-span-3">
             <Label className="text-xs mb-1.5 block">f(x) =</Label>
-            <Input value={inputs.expr} onChange={e => update('expr', e.target.value)} className="math-input" placeholder="x^3 - 2*x - 5" />
+            <Input
+              value={inputs.expr}
+              onChange={e => update('expr', e.target.value)}
+              onFocus={() => setActiveField('expr')}
+              className={`math-input ${activeField === 'expr' ? 'ring-2 ring-primary' : ''}`}
+              placeholder="x^3 - 2*x - 5"
+            />
           </div>
           {isFixedPoint && (
             <div className="sm:col-span-2 lg:col-span-3">
               <Label className="text-xs mb-1.5 block">g(x) = (función de iteración)</Label>
-              <Input value={inputs.gExpr} onChange={e => update('gExpr', e.target.value)} className="math-input" placeholder="(2*x + 5)^(1/3)" />
+              <Input
+                value={inputs.gExpr}
+                onChange={e => update('gExpr', e.target.value)}
+                onFocus={() => setActiveField('gExpr')}
+                className={`math-input ${activeField === 'gExpr' ? 'ring-2 ring-primary' : ''}`}
+                placeholder="(2*x + 5)^(1/3)"
+              />
             </div>
           )}
+          <div className="sm:col-span-2 lg:col-span-3">
+            <MathKeyboard
+              value={inputs[activeField] || ''}
+              onChange={val => update(activeField, val)}
+            />
+          </div>
           {needsInterval && (
             <>
               <div>
