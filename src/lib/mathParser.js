@@ -1,22 +1,25 @@
 // Simple math expression parser that evaluates f(x) from a string
 export function evaluateFunction(expr, x) {
+  // Replace functions first (order matters: longer names before shorter)
   const sanitized = expr
     .replace(/\^/g, '**')
-    .replace(/sen\(/gi, 'Math.sin(')
-    .replace(/cos\(/gi, 'Math.cos(')
-    .replace(/tan\(/gi, 'Math.tan(')
-    .replace(/sin\(/gi, 'Math.sin(')
-    .replace(/log\(/gi, 'Math.log10(')
-    .replace(/ln\(/gi, 'Math.log(')
-    .replace(/sqrt\(/gi, 'Math.sqrt(')
-    .replace(/abs\(/gi, 'Math.abs(')
-    .replace(/exp\(/gi, 'Math.exp(')
-    .replace(/pi/gi, 'Math.PI')
-    .replace(/e(?![x])/gi, 'Math.E');
+    .replace(/sen\s*\(/gi, 'Math.sin(')
+    .replace(/sin\s*\(/gi, 'Math.sin(')
+    .replace(/cos\s*\(/gi, 'Math.cos(')
+    .replace(/tan\s*\(/gi, 'Math.tan(')
+    .replace(/sqrt\s*\(/gi, 'Math.sqrt(')
+    .replace(/abs\s*\(/gi, 'Math.abs(')
+    .replace(/exp\s*\(/gi, 'Math.exp(')
+    .replace(/ln\s*\(/gi, 'Math.log(')
+    .replace(/log\s*\(/gi, 'Math.log10(')
+    // pi and e as standalone constants (not inside words like "Math.exp")
+    .replace(/\bpi\b/gi, 'Math.PI')
+    .replace(/\be\b/g, 'Math.E');
   
   try {
     const fn = new Function('x', `return ${sanitized}`);
-    return fn(x);
+    const result = fn(x);
+    return result;
   } catch {
     return NaN;
   }
