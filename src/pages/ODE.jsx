@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import MathKeyboard from '@/components/shared/MathKeyboard';
 import { euler, eulerImproved, rungeKutta2, rungeKutta4 } from '@/lib/odeMethods';
 import StepByStep from '@/components/shared/StepByStep';
 import IterationTable from '@/components/shared/IterationTable';
@@ -110,6 +111,7 @@ export default function ODE() {
             <div className="sm:col-span-2 lg:col-span-3">
               <Label className="text-xs mb-1.5 block">dy/dx = f(x, y) =</Label>
               <Input value={expr} onChange={e => setExpr(e.target.value)} className="math-input" placeholder="x + y" />
+              <MathKeyboard value={expr} onChange={setExpr} />
             </div>
             <div>
               <Label className="text-xs mb-1.5 block">x₀</Label>

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import MathKeyboard from '@/components/shared/MathKeyboard';
 import { trapezoidal, simpson13, simpson38, finiteDifferences } from '@/lib/integrationMethods';
 import StepByStep from '@/components/shared/StepByStep';
 import ResultBanner from '@/components/shared/ResultBanner';
@@ -97,6 +98,7 @@ export default function Integration() {
             <div className="sm:col-span-2 lg:col-span-3">
               <Label className="text-xs mb-1.5 block">f(x) =</Label>
               <Input value={expr} onChange={e => setExpr(e.target.value)} className="math-input" />
+              <MathKeyboard value={expr} onChange={setExpr} />
             </div>
             {isIntegration ? (
               <>
