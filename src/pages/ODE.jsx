@@ -111,7 +111,7 @@ export default function ODE() {
             <div className="sm:col-span-2 lg:col-span-3">
               <Label className="text-xs mb-1.5 block">dy/dx = f(x, y) =</Label>
               <Input value={expr} onChange={e => setExpr(e.target.value)} className="math-input" placeholder="x + y" />
-              <MathKeyboard value={expr} onChange={setExpr} />
+              <MathKeyboard value={expr} onChange={setExpr} showY={true} />
             </div>
             <div>
               <Label className="text-xs mb-1.5 block">x₀</Label>
