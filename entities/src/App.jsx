@@ -1,7 +1,7 @@
 import { Toaster } from './api/components/ui/toaster'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from './lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from './lib/AuthContext';
 import UserNotRegisteredError from './api/components/UserNotRegisteredError';
@@ -18,10 +18,24 @@ import LinearSystems from './pages/LinearSystems';
 import Integration from './pages/Integration';
 import ODE from './pages/ODE';
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+const PrivateRoute = ({ children }) => {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+const AuthenticatedApp = () => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+
+  // Show loading spinner while checking auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -34,13 +48,6 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password'];
-      if (!publicPaths.includes(window.location.pathname)) {
-        navigateToLogin();
-        return null;
-      }
     }
   }
 
@@ -51,7 +58,7 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route element={<AppLayout />}>
+      <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
         <Route path="/" element={<Home />} />
         <Route path="/nonlinear" element={<NonLinear />} />
         <Route path="/matrices" element={<Matrices />} />

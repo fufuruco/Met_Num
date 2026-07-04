@@ -7,14 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
+import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
+  // Firebase sends "oobCode" as the query param in its reset links
+  const oobCode = searchParams.get("oobCode") || searchParams.get("token");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,24 +34,23 @@ export default function ResetPassword() {
     }
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resetToken, newPassword })
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Error al restablecer la contraseña');
-      }
-      window.location.href = "/login";
+      await confirmPasswordReset(auth, oobCode, newPassword);
+      setDone(true);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2500);
     } catch (err) {
-      setError(err.message || "Error al restablecer la contraseña");
+      if (err.code === "auth/invalid-action-code") {
+        setError("El enlace de restablecimiento ya fue usado o ha expirado. Solicita uno nuevo.");
+      } else {
+        setError(err.message || "Error al restablecer la contraseña");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (!resetToken) {
+  if (!oobCode) {
     return (
       <AuthLayout
         icon={AlertTriangle}
@@ -60,6 +64,20 @@ export default function ResetPassword() {
       >
         <p className="text-sm text-muted-foreground text-center">
           El enlace que usaste parece estar incompleto. Por favor solicita un nuevo correo de restablecimiento.
+        </p>
+      </AuthLayout>
+    );
+  }
+
+  if (done) {
+    return (
+      <AuthLayout
+        icon={Lock}
+        title="¡Contraseña actualizada!"
+        subtitle="Serás redirigido al inicio de sesión en un momento..."
+      >
+        <p className="text-sm text-muted-foreground text-center">
+          Tu contraseña fue restablecida exitosamente. Redirigiendo...
         </p>
       </AuthLayout>
     );
