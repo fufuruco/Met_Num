@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Binary, Grid3X3, GitBranch, 
-  TrendingUp, Sigma, X, Menu
+  TrendingUp, Sigma, X, Menu, BookOpen
 } from 'lucide-react';
 
 const modules = [
@@ -12,6 +12,7 @@ const modules = [
   { label: 'Sistemas Lineales', path: '/linear-systems', icon: GitBranch },
   { label: 'Integración y Derivación', path: '/integration', icon: TrendingUp },
   { label: 'Ecuaciones Diferenciales', path: '/ode', icon: Sigma },
+  { label: 'Formulario de Cálculo', path: '/calculus', icon: BookOpen },
 ];
 
 export default function Sidebar({ open, onClose }) {

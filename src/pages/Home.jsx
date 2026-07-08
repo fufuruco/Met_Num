@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Binary, Grid3X3, GitBranch, TrendingUp, Sigma, ArrowRight } from 'lucide-react';
+import { Binary, Grid3X3, GitBranch, TrendingUp, Sigma, ArrowRight, BookOpen } from 'lucide-react';
 
 const modules = [
   {
@@ -42,6 +42,14 @@ const modules = [
     path: '/ode',
     color: 'from-cyan-500 to-blue-600',
     badge: '4 métodos',
+  },
+  {
+    title: 'Formulario de Cálculo',
+    desc: 'Límites, Derivadas, Integrales, Multivariable, Laplace, Fourier',
+    icon: BookOpen,
+    path: '/calculus',
+    color: 'from-rose-500 to-pink-600',
+    badge: 'Cálculo 1–4',
   },
 ];
 

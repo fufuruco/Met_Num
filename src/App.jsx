@@ -13,6 +13,7 @@ import Matrices from '@/pages/Matrices';
 import LinearSystems from '@/pages/LinearSystems';
 import Integration from '@/pages/Integration';
 import ODE from '@/pages/ODE';
+import Calculus from '@/pages/Calculus';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/linear-systems" element={<LinearSystems />} />
         <Route path="/integration" element={<Integration />} />
         <Route path="/ode" element={<ODE />} />
+        <Route path="/calculus" element={<Calculus />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
