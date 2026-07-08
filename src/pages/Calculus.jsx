@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { calculusTopics, calcTopicList } from '@/lib/calculusData';
 import FormulaCard from '@/components/calculus/FormulaCard';
+import CalculusCalculator from '@/components/calculus/CalculusCalculator';
 
 export default function Calculus() {
   const [activeTopic, setActiveTopic] = useState('limits');
@@ -45,60 +46,71 @@ export default function Calculus() {
       </aside>
 
       {/* Contenido principal */}
-      <div className="flex-1 p-6 lg:p-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${topic.color} flex items-center justify-center`}>
-            <BookOpen className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h1 className="font-bold text-lg">{topic.title}</h1>
-            <p className="text-xs text-muted-foreground">Formulario y referencia rápida</p>
-          </div>
-        </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-8">
 
-        {/* Tabs móvil */}
-        <div className="flex lg:hidden gap-1 flex-wrap mb-5">
-          {calcTopicList.map(t => (
-            <button
-              key={t.id}
-              onClick={() => { setActiveTopic(t.id); setSearch(''); }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTopic === t.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Búsqueda */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar fórmulas, reglas o propiedades..."
-            className="pl-9"
-          />
-        </div>
-
-        {/* Secciones con fórmulas */}
-        <div className="space-y-4">
-          {filteredSections.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <p className="text-sm">No se encontraron resultados para "<span className="font-semibold">{search}</span>"</p>
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+            <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${topic.color} flex items-center justify-center`}>
+              <BookOpen className="w-4 h-4 text-white" />
             </div>
-          ) : (
-            filteredSections.map((section, idx) => (
-              <FormulaCard key={idx} section={section} />
-            ))
-          )}
+            <div>
+              <h1 className="font-bold text-lg">{topic.title}</h1>
+              <p className="text-xs text-muted-foreground">Formulario + Calculadora interactiva</p>
+            </div>
+          </div>
+
+          {/* Tabs móvil */}
+          <div className="flex lg:hidden gap-1 flex-wrap">
+            {calcTopicList.map(t => (
+              <button
+                key={t.id}
+                onClick={() => { setActiveTopic(t.id); setSearch(''); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeTopic === t.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Layout: calculadora izq + formulario der */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+
+            {/* CALCULADORA */}
+            <div className="xl:sticky xl:top-6">
+              <CalculusCalculator topicId={activeTopic} />
+            </div>
+
+            {/* FORMULARIO */}
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar fórmulas, reglas..."
+                  className="pl-9"
+                />
+              </div>
+
+              {filteredSections.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <p className="text-sm">Sin resultados para "<span className="font-semibold">{search}</span>"</p>
+                </div>
+              ) : (
+                filteredSections.map((section, idx) => (
+                  <FormulaCard key={idx} section={section} />
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
