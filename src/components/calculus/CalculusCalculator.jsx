@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Keyboard, Play, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import MathKeyboard from '@/components/shared/MathKeyboard';
+import MathRenderer from '@/components/calculus/MathRenderer';
 
 // ── configs por tema ─────────────────────────────────────────────────────────
 const topicConfig = {
@@ -16,12 +17,11 @@ const topicConfig = {
     ],
     buildPrompt: (v) =>
       `Calcula el límite: lim (x→${v.point}) de f(x) = ${v.fn}.
-       Muestra el procedimiento completo paso a paso en español:
-       1) Sustituye directamente y verifica si es indeterminado.
-       2) Si es indeterminado (0/0, ∞/∞ etc.) aplica la técnica adecuada (factorización, L'Hôpital, racionalización, etc.).
-       3) Simplifica cada paso con detalle.
-       4) Indica el resultado final claramente.
-       Usa notación matemática clara, sin LaTeX complejo, usa símbolos Unicode (→, ∞, ², ³, √, etc.).`,
+       Muestra el procedimiento completo paso a paso en español.
+       IMPORTANTE: Usa LaTeX para todas las expresiones matemáticas.
+       - Expresiones en línea: $...$ (ej: $\\lim_{x \\to ${v.point}} \\frac{x^3+1}{x^2-1}$)
+       - Expresiones centradas grandes: $$...$$ (ej: $$\\lim_{x \\to ${v.point}} f(x) = \\frac{3}{2}$$)
+       Estructura: título "Solución", luego pasos numerados con texto explicativo + fórmulas LaTeX, resultado final destacado.`,
   },
   derivatives: {
     label: 'Calculadora de Derivadas',
@@ -32,13 +32,11 @@ const topicConfig = {
     ],
     buildPrompt: (v) =>
       `Calcula la derivada de orden ${v.order || 1} de f(x) = ${v.fn}.
-       Muestra el procedimiento completo paso a paso en español:
-       1) Identifica la regla a aplicar (potencia, producto, cociente, cadena, etc.).
-       2) Aplica la regla paso a paso.
-       3) Simplifica el resultado.
-       4) Si el orden es > 1, repite el proceso para cada derivada sucesiva.
-       5) Indica el resultado final: f'(x) = ...
-       Usa notación matemática clara con símbolos Unicode.`,
+       Muestra el procedimiento completo paso a paso en español.
+       IMPORTANTE: Usa LaTeX para todas las expresiones matemáticas.
+       - Expresiones en línea: $...$ (ej: $f'(x)$)
+       - Expresiones centradas: $$...$$ (ej: $$\\frac{d}{dx}[x^3 \\sin(x)]$$)
+       Estructura: título "Solución", pasos numerados con texto + fórmulas LaTeX, resultado final en bloque $$.`,
   },
   integrals: {
     label: 'Calculadora de Integrales',
@@ -51,12 +49,12 @@ const topicConfig = {
     buildPrompt: (v) => {
       const definida = v.a !== '' && v.b !== '';
       return definida
-        ? `Calcula la integral definida ∫[${v.a},${v.b}] (${v.fn}) dx.
-           Paso a paso en español: encuentra la antiderivada F(x), aplica el Teorema Fundamental F(b)−F(a) y da el resultado numérico.
-           Usa notación clara con símbolos Unicode.`
-        : `Calcula la integral indefinida ∫ (${v.fn}) dx.
-           Paso a paso en español: identifica la técnica (sustitución, partes, fracciones parciales, etc.), aplícala con detalle y escribe el resultado con +C.
-           Usa notación clara con símbolos Unicode.`;
+        ? `Calcula la integral definida ∫[${v.a},${v.b}] (${v.fn}) dx paso a paso en español.
+           IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
+           Encuentra F(x), aplica TFC: $$F(b)-F(a)$$ y da el resultado numérico.`
+        : `Calcula la integral indefinida ∫ (${v.fn}) dx paso a paso en español.
+           IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
+           Identifica la técnica, aplícala con detalle y escribe el resultado con $+C$.`;
     },
   },
   multivariable: {
@@ -68,9 +66,9 @@ const topicConfig = {
         options: ['Derivada parcial ∂f/∂x', 'Derivada parcial ∂f/∂y', 'Gradiente ∇f', 'Laplaciano ∇²f'] },
     ],
     buildPrompt: (v) =>
-      `Realiza la operación "${v.op}" sobre f(x,y) = ${v.fn}.
-       Paso a paso en español: aplica la definición/reglas, trata las variables como constantes cuando corresponda, simplifica y da el resultado final.
-       Usa notación clara con símbolos Unicode.`,
+      `Realiza la operación "${v.op}" sobre f(x,y) = ${v.fn} paso a paso en español.
+       IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
+       Aplica la definición/reglas con detalle y da el resultado final en bloque $$.`,
   },
   transforms: {
     label: 'Calculadora de Transformadas',
@@ -81,9 +79,9 @@ const topicConfig = {
         options: ['Transformada de Laplace L{f(t)}', 'Transformada inversa L⁻¹{F(s)}', 'Serie de Taylor (a=0)', 'Coeficientes de Fourier'] },
     ],
     buildPrompt: (v) =>
-      `Calcula "${v.type}" de la función ${v.fn}.
-       Paso a paso en español: aplica la definición o usa la tabla de transformadas, muestra cada propiedad usada y da el resultado final con notación clara.
-       Usa símbolos Unicode, no LaTeX.`,
+      `Calcula "${v.type}" de la función ${v.fn} paso a paso en español.
+       IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
+       Aplica la tabla de transformadas o definición, muestra cada propiedad y da el resultado final en bloque $$.`,
   },
 };
 
@@ -101,7 +99,7 @@ function ResultBox({ result }) {
       </button>
       {open && (
         <div className="px-4 py-4 bg-card">
-          <pre className="text-sm leading-relaxed whitespace-pre-wrap font-mono text-foreground">{result}</pre>
+          <MathRenderer text={result} />
         </div>
       )}
     </div>
