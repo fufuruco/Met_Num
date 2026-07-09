@@ -1,47 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Binary, Grid3X3, GitBranch, TrendingUp, Sigma, ArrowRight, BookOpen } from 'lucide-react';
+import { Binary, Grid3X3, GitBranch, TrendingUp, Sigma, ArrowRight, BookOpen, BarChart2 } from 'lucide-react';
 
 const modules = [
   {
-    title: 'Ecuaciones No Lineales',
-    desc: 'Bisección, Regula Falsi, Newton-Raphson, Secante, Punto Fijo',
+    title: 'Métodos Numéricos',
+    desc: 'Ecuaciones No Lineales, Cálculo Matricial, Sistemas Lineales, Integración y ODEs',
     icon: Binary,
-    path: '/nonlinear',
+    path: '/methods',
     color: 'from-blue-500 to-indigo-600',
-    badge: '5 métodos',
-  },
-  {
-    title: 'Cálculo Matricial',
-    desc: 'Suma, Resta, Multiplicación, Determinante, Inversa, Transpuesta',
-    icon: Grid3X3,
-    path: '/matrices',
-    color: 'from-emerald-500 to-teal-600',
-    badge: '6 operaciones',
-  },
-  {
-    title: 'Sistemas de Ecuaciones Lineales',
-    desc: 'Gauss, Gauss-Jordan, LU, Jacobi, Gauss-Seidel',
-    icon: GitBranch,
-    path: '/linear-systems',
-    color: 'from-orange-500 to-red-500',
-    badge: '5 métodos',
-  },
-  {
-    title: 'Integración y Derivación',
-    desc: 'Trapecio, Simpson 1/3, Simpson 3/8, Diferencias finitas',
-    icon: TrendingUp,
-    path: '/integration',
-    color: 'from-purple-500 to-pink-500',
-    badge: '4 métodos',
-  },
-  {
-    title: 'Ecuaciones Diferenciales',
-    desc: 'Euler, Euler Mejorado, Runge-Kutta 2° y 4° orden',
-    icon: Sigma,
-    path: '/ode',
-    color: 'from-cyan-500 to-blue-600',
-    badge: '4 métodos',
+    badge: '5 módulos',
   },
   {
     title: 'Formulario de Cálculo',
@@ -50,6 +18,14 @@ const modules = [
     path: '/calculus',
     color: 'from-rose-500 to-pink-600',
     badge: 'Cálculo 1–4',
+  },
+  {
+    title: 'Análisis Estadístico',
+    desc: 'Media, Mediana, Moda, Varianza, Desviación Estándar e Histograma',
+    icon: BarChart2,
+    path: '/statistics',
+    color: 'from-sky-500 to-indigo-600',
+    badge: 'Estadística descriptiva',
   },
 ];
 

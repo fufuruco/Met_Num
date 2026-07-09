@@ -44,7 +44,7 @@ const theories = {
   },
 };
 
-export default function Integration() {
+export default function Integration({ isEmbedded = false }) {
   const [tab, setTab] = useState('trapezoidal');
   const [expr, setExpr] = useState('x^2');
   const [a, setA] = useState('0');
@@ -68,19 +68,21 @@ export default function Integration() {
   const isIntegration = tab !== 'finiteDiff';
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-          <TrendingUp className="w-4 h-4 text-white" />
+    <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
+      {!isEmbedded && (
+        <div className="flex items-center gap-3 mb-6">
+          <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg">Integración y Derivación Numérica</h1>
+            <p className="text-xs text-muted-foreground">Aproximaciones numéricas</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-lg">Integración y Derivación Numérica</h1>
-          <p className="text-xs text-muted-foreground">Aproximaciones numéricas</p>
-        </div>
-      </div>
+      )}
 
       <Tabs value={tab} onValueChange={v => { setTab(v); setResult(null); }}>
         <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6">

@@ -2,17 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Binary, Grid3X3, GitBranch, 
-  TrendingUp, Sigma, X, Menu, BookOpen
+  TrendingUp, Sigma, X, Menu, BookOpen, BarChart2
 } from 'lucide-react';
 
 const modules = [
   { label: 'Inicio', path: '/', icon: LayoutDashboard },
-  { label: 'Ecuaciones No Lineales', path: '/nonlinear', icon: Binary },
-  { label: 'Cálculo Matricial', path: '/matrices', icon: Grid3X3 },
-  { label: 'Sistemas Lineales', path: '/linear-systems', icon: GitBranch },
-  { label: 'Integración y Derivación', path: '/integration', icon: TrendingUp },
-  { label: 'Ecuaciones Diferenciales', path: '/ode', icon: Sigma },
+  { label: 'Métodos Numéricos', path: '/methods', icon: Binary },
   { label: 'Formulario de Cálculo', path: '/calculus', icon: BookOpen },
+  { label: 'Análisis Estadístico', path: '/statistics', icon: BarChart2 },
 ];
 
 export default function Sidebar({ open, onClose }) {

@@ -60,7 +60,7 @@ function MatrixDisplay({ label, matrix }) {
   );
 }
 
-export default function Matrices() {
+export default function Matrices({ isEmbedded = false }) {
   const [tab, setTab] = useState('binary');
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
@@ -96,19 +96,21 @@ export default function Matrices() {
   const isBinary = ['add', 'subtract', 'multiply'].includes(operation);
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-          <Grid3X3 className="w-4 h-4 text-white" />
+    <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
+      {!isEmbedded && (
+        <div className="flex items-center gap-3 mb-6">
+          <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+            <Grid3X3 className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg">Cálculo Matricial</h1>
+            <p className="text-xs text-muted-foreground">Operaciones con matrices</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-lg">Cálculo Matricial</h1>
-          <p className="text-xs text-muted-foreground">Operaciones con matrices</p>
-        </div>
-      </div>
+      )}
 
       <div className="space-y-5">
         <div className="bg-card border border-border rounded-xl p-5">

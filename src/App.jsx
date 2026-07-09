@@ -14,6 +14,8 @@ import LinearSystems from '@/pages/LinearSystems';
 import Integration from '@/pages/Integration';
 import ODE from '@/pages/ODE';
 import Calculus from '@/pages/Calculus';
+import NumericalMethods from '@/pages/NumericalMethods';
+import Statistics from '@/pages/Statistics';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +51,8 @@ const AuthenticatedApp = () => {
         <Route path="/integration" element={<Integration />} />
         <Route path="/ode" element={<ODE />} />
         <Route path="/calculus" element={<Calculus />} />
+        <Route path="/methods" element={<NumericalMethods />} />
+        <Route path="/statistics" element={<Statistics />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
