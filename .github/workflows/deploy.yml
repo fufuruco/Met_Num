@@ -34,7 +34,7 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npx vite build --base=/Met_Num/
+        run: VITE_BASE44_APP_ID=6a452807c71f0d92851a2884 VITE_BASE44_APP_BASE_URL=https://num-lab-engine-851a2884.base44.app npx vite build --base=/Met_Num/
 
       - name: Add .nojekyll
         run: touch dist/.nojekyll
