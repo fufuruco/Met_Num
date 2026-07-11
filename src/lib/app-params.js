@@ -58,8 +58,8 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	return null;
 }
 
-const defaultBase44AppId = import.meta.env.VITE_BASE44_APP_ID ?? '6a517bb585dc0a6b7efa729f';
-const defaultBase44AppBaseUrl = import.meta.env.VITE_BASE44_APP_BASE_URL ?? 'https://num-lab-engine-copy-7efa729f.base44.app';
+const defaultBase44AppId = import.meta.env.VITE_BASE44_APP_ID || '6a517bb585dc0a6b7efa729f';
+const defaultBase44AppBaseUrl = import.meta.env.VITE_BASE44_APP_BASE_URL || 'https://num-lab-engine-copy-7efa729f.base44.app';
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
