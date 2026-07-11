@@ -1,10 +1,11 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import AppLayout from '@/components/layout/AppLayout';
 import Home from '@/pages/Home';
@@ -16,6 +17,10 @@ import ODE from '@/pages/ODE';
 import Calculus from '@/pages/Calculus';
 import NumericalMethods from '@/pages/NumericalMethods';
 import Statistics from '@/pages/Statistics';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,8 +39,7 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
+      // Let ProtectedRoute handle the redirection to login
       return null;
     }
   }
@@ -43,16 +47,22 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/nonlinear" element={<NonLinear />} />
-        <Route path="/matrices" element={<Matrices />} />
-        <Route path="/linear-systems" element={<LinearSystems />} />
-        <Route path="/integration" element={<Integration />} />
-        <Route path="/ode" element={<ODE />} />
-        <Route path="/calculus" element={<Calculus />} />
-        <Route path="/methods" element={<NumericalMethods />} />
-        <Route path="/statistics" element={<Statistics />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/nonlinear" element={<NonLinear />} />
+          <Route path="/matrices" element={<Matrices />} />
+          <Route path="/linear-systems" element={<LinearSystems />} />
+          <Route path="/integration" element={<Integration />} />
+          <Route path="/ode" element={<ODE />} />
+          <Route path="/calculus" element={<Calculus />} />
+          <Route path="/methods" element={<NumericalMethods />} />
+          <Route path="/statistics" element={<Statistics />} />
+        </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

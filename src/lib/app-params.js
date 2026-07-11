@@ -11,14 +11,38 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 		return defaultValue;
 	}
 	const storageKey = `base44_${toSnakeCase(paramName)}`;
-	const urlParams = new URLSearchParams(window.location.search);
-	const searchParam = urlParams.get(paramName);
-	if (removeFromUrl) {
-		urlParams.delete(paramName);
-		const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""
-			}${window.location.hash}`;
+	
+	// Check both search and hash for the parameter
+	const searchParams = new URLSearchParams(window.location.search);
+	const hashQueryIndex = window.location.hash.indexOf('?');
+	const hashParams = hashQueryIndex !== -1 ? new URLSearchParams(window.location.hash.substring(hashQueryIndex)) : new URLSearchParams();
+	
+	let searchParam = searchParams.get(paramName) || hashParams.get(paramName);
+	
+	// Also check for 'token' if paramName is 'access_token' (but not on reset-password page)
+	if (!searchParam && paramName === 'access_token') {
+		const isResetPassword = window.location.pathname.endsWith('/reset-password') || window.location.hash.includes('reset-password');
+		if (!isResetPassword) {
+			searchParam = searchParams.get('token') || hashParams.get('token');
+		}
+	}
+
+	if (removeFromUrl && searchParam) {
+		searchParams.delete(paramName);
+		if (paramName === 'access_token') searchParams.delete('token');
+		
+		let newHash = window.location.hash;
+		if (hashQueryIndex !== -1) {
+			hashParams.delete(paramName);
+			if (paramName === 'access_token') hashParams.delete('token');
+			const hashParamStr = hashParams.toString();
+			newHash = window.location.hash.substring(0, hashQueryIndex) + (hashParamStr ? `?${hashParamStr}` : '');
+		}
+
+		const newUrl = `${window.location.pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}${newHash}`;
 		window.history.replaceState({}, document.title, newUrl);
 	}
+
 	if (searchParam) {
 		storage.setItem(storageKey, searchParam);
 		return searchParam;
@@ -34,8 +58,8 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	return null;
 }
 
-const defaultBase44AppId = import.meta.env.VITE_BASE44_APP_ID ?? '6a452807c71f0d92851a2884';
-const defaultBase44AppBaseUrl = import.meta.env.VITE_BASE44_APP_BASE_URL ?? 'https://num-lab-engine-851a2884.base44.app';
+const defaultBase44AppId = import.meta.env.VITE_BASE44_APP_ID ?? '6a517bb585dc0a6b7efa729f';
+const defaultBase44AppBaseUrl = import.meta.env.VITE_BASE44_APP_BASE_URL ?? 'https://num-lab-engine-copy-7efa729f.base44.app';
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {

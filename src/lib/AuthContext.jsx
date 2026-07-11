@@ -37,15 +37,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
         setAppPublicSettings(publicSettings);
-        
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-          setAuthChecked(true);
-        }
+        // After loading app public settings, attempt to determine authentication status
+        // Base44 SDK will use any stored token (localStorage) automatically
+        await checkUserAuth();
+        // Ensure loading flags are cleared
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
@@ -102,33 +99,42 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setAuthChecked(true);
       
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
-      }
-      // Network errors (no connectivity, CORS, etc.) — don't block the app
+      // If user auth fails, it might be an expired token or no session
+      // We treat this as unauthenticated without marking an authError
+      // so the UI can simply show the login page via ProtectedRoute.
+      // setAuthError is only used for critical errors like user_not_registered.
     }
   };
 
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    
+    const loginUrl = `${window.location.origin}${window.location.pathname}#/login`;
+
+    // Clear tokens locally
+    localStorage.removeItem('base44_access_token');
+    localStorage.removeItem('base44_token');
+
+    // Attempt to notify SDK but don't let it redirect the page
+    try {
+      if (base44 && base44.auth && typeof base44.auth.logout === 'function') {
+        // Calling it without arguments might prevent it from redirecting,
+        // or we can just rely on the local token cleanup.
+        // base44.auth.logout(); 
+      }
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+
     if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
+      window.location.href = loginUrl;
     }
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // Redirect to the app's local login route instead of Base44 hosted login
+    const loginUrl = `${window.location.origin}${window.location.pathname}#/login`;
+    window.location.href = loginUrl;
   };
 
   return (

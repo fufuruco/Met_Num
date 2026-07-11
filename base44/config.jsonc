@@ -1,0 +1,7 @@
+{
+  "name": "num-lab-engine",
+  "entitiesDir": "./entities",
+  "site": {
+    "outputDirectory": "./dist"
+  }
+}

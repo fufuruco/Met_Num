@@ -2,8 +2,9 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Binary, Grid3X3, GitBranch, 
-  TrendingUp, Sigma, X, Menu, BookOpen, BarChart2
+  TrendingUp, Sigma, X, Menu, BookOpen, BarChart2, LogOut
 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 const modules = [
   { label: 'Inicio', path: '/', icon: LayoutDashboard },
@@ -14,6 +15,7 @@ const modules = [
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <>
@@ -67,10 +69,22 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         <div className="p-4 border-t border-[hsl(var(--sidebar-border))]">
-          <div className="px-3 py-2 rounded-lg bg-[hsl(var(--sidebar-accent))]">
+          <div className="px-3 py-2 rounded-lg bg-[hsl(var(--sidebar-accent))] mb-4">
             <p className="text-[11px] opacity-70">Laboratorio Virtual</p>
             <p className="text-xs font-semibold text-white">Ingeniería</p>
           </div>
+          
+          {isAuthenticated && (
+            <button
+              onClick={() => {
+                logout(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
+            >
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
+            </button>
+          )}
         </div>
       </aside>
     </>
