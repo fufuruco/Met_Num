@@ -2,6 +2,7 @@
   "name": "num-lab-engine",
   "entitiesDir": "./entities",
   "site": {
-    "outputDirectory": "./dist"
+    "outputDirectory": "./dist",
+    "serveCommand": "npm run dev"
   }
 }

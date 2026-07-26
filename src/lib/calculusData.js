@@ -282,6 +282,67 @@ export const calculusTopics = {
       },
     ],
   },
+  algebra: {
+    title: 'Álgebra y Ecuaciones',
+    color: 'from-amber-500 to-orange-600',
+    sections: [
+      {
+        title: 'Ecuaciones de 1º y 2º Grado',
+        formula: 'ax^2 + bx + c = 0',
+        description: 'Métodos para resolver ecuaciones lineales y cuadráticas de forma exacta.',
+        rules: [
+          { name: 'Fórmula general cuadrática', formula: 'x = [-b ± √(b² - 4ac)] / 2a' },
+          { name: 'Discriminante (D = b² - 4ac)', formula: 'D > 0 (2 reales), D = 0 (1 doble), D < 0 (complejas)' },
+          { name: 'Factorización cuadrática', formula: 'ax² + bx + c = a(x - x₁)(x - x₂)' },
+          { name: 'Ecuación lineal', formula: 'ax + b = 0  ⇒  x = -b/a' },
+        ],
+      },
+      {
+        title: 'Exponentes y Logaritmos',
+        formula: 'log_a(x) = y  ⟺  a^y = x',
+        description: 'Propiedades fundamentales de las operaciones exponenciales y logarítmicas.',
+        rules: [
+          { name: 'Producto de potencias', formula: 'aⁿ · aᵐ = aⁿ⁺ᵐ' },
+          { name: 'Potencia de potencia', formula: '(aⁿ)ᵐ = aⁿᵐ' },
+          { name: 'Logaritmo de un producto', formula: 'log(x · y) = log(x) + log(y)' },
+          { name: 'Logaritmo de un cociente', formula: 'log(x / y) = log(x) - log(y)' },
+          { name: 'Logaritmo de una potencia', formula: 'log(xⁿ) = n · log(x)' },
+          { name: 'Cambio de base', formula: 'log_a(x) = ln(x) / ln(a)' },
+        ],
+      },
+      {
+        title: 'Sistemas de Ecuaciones Lineales',
+        formula: 'Ax = b',
+        description: 'Sistemas de m ecuaciones con n incógnitas que se pueden resolver analíticamente.',
+        rules: [
+          { name: 'Método de sustitución', formula: 'Despejar una incógnita en una ecuación y sustituir en las otras' },
+          { name: 'Método de reducción', formula: 'Sumar o restar ecuaciones para eliminar incógnitas' },
+          { name: 'Regla de Cramer', formula: 'x\u1d62 = det(A\u1d62) / det(A)' },
+        ],
+      },
+    ],
+  },
+  implicit3d: {
+    title: 'Graficador 3D — Superficies Implícitas',
+    color: 'from-sky-500 to-indigo-600',
+    sections: [
+      {
+        title: 'Cómo usar el Graficador 3D',
+        formula: 'F(x, y, z) = 0',
+        description: 'Introduce cualquier función F(x,y,z). El graficador buscará y renderizará la superficie donde F = 0 usando el algoritmo Marching Cubes. La gráfica aparece en tiempo real conforme escribes (al darle Calcular).',
+        rules: [
+          { name: 'Esfera (radio r)', formula: 'x^2 + y^2 + z^2 - r^2' },
+          { name: 'Cono', formula: 'x^2 + z^2 - y^2' },
+          { name: 'Paraboloide Hiperbólico (Silla)', formula: 'x^2 - y^2 - z' },
+          { name: 'Hiperboloide de 1 hoja', formula: 'x^2 + z^2 - y^2 - 1' },
+          { name: 'Hiperboloide de 2 hojas', formula: 'y^2 - x^2 - z^2 - 1' },
+          { name: 'Paraboloide Elíptico', formula: 'x^2 + z^2 - y' },
+          { name: 'Toro (rosquilla)', formula: '(sqrt(x^2+z^2) - 3)^2 + y^2 - 1' },
+          { name: 'Cilindro', formula: 'x^2 + z^2 - 4' },
+        ],
+      },
+    ],
+  },
 };
 
 export const calcTopicList = [
@@ -290,4 +351,6 @@ export const calcTopicList = [
   { id: 'integrals',     label: 'Integrales',           subtitle: 'Cálculo 2', color: 'from-emerald-500 to-teal-600' },
   { id: 'multivariable', label: 'Multivariable',        subtitle: 'Cálculo 3', color: 'from-orange-500 to-red-500' },
   { id: 'transforms',   label: 'Transformadas',         subtitle: 'Cálculo 4', color: 'from-cyan-500 to-blue-600' },
+  { id: 'algebra',       label: 'Álgebra',              subtitle: 'Ecuaciones', color: 'from-amber-500 to-orange-600' },
+  { id: 'implicit3d',    label: 'Graficador 3D',         subtitle: 'Superficies', color: 'from-sky-500 to-indigo-600' },
 ];

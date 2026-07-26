@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Keyboard, Play, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import MathKeyboard from '@/components/shared/MathKeyboard';
 import MathRenderer from '@/components/calculus/MathRenderer';
+import FunctionPlotter2D from '@/components/calculus/FunctionPlotter2D';
+import FunctionPlotter3D from '@/components/calculus/FunctionPlotter3D';
 
 // ── configs por tema ─────────────────────────────────────────────────────────
 const topicConfig = {
@@ -61,14 +63,33 @@ const topicConfig = {
     label: 'Calculadora Multivariable',
     color: 'from-orange-500 to-red-500',
     fields: [
-      { key: 'fn',  label: 'f(x, y)',   placeholder: 'ej: x^2*y + sin(x*y)',  usesKeyboard: true },
+      { key: 'fn',  label: 'f(x, y, z)',   placeholder: 'ej: x^2*y + sin(x*y)',  usesKeyboard: true },
       { key: 'op',  label: 'Operación', placeholder: '',                        usesKeyboard: false, isSelect: true,
-        options: ['Derivada parcial ∂f/∂x', 'Derivada parcial ∂f/∂y', 'Gradiente ∇f', 'Laplaciano ∇²f'] },
+        options: [
+          'Derivada parcial ∂f/∂x', 'Derivada parcial ∂f/∂y', 'Derivada parcial ∂f/∂z',
+          'Derivada parcial de 2º orden ∂²f/∂x²', 'Derivada parcial de 2º orden ∂²f/∂y²', 'Derivada parcial mixta ∂²f/∂x∂y',
+          'Gradiente ∇f', 'Matriz Jacobiana', 'Matriz Hessiana', 'Laplaciano ∇²f',
+          'Integral Doble ∬ f(x,y) dA', 'Integral Triple ∭ f(x,y,z) dV'
+        ] },
     ],
-    buildPrompt: (v) =>
-      `Realiza la operación "${v.op}" sobre f(x,y) = ${v.fn} paso a paso en español.
+    buildPrompt: (v) => {
+      const op = v.op || 'Derivada parcial ∂f/∂x';
+      if (op.includes('Integral Doble')) {
+        return `Calcula la integral doble de f(x,y) = ${v.fn} con los límites de integración: x en [${v.xa||'a'}, ${v.xb||'b'}], y en [${v.ya||'c'}, ${v.yb||'d'}].
+                Muestra el procedimiento de integración iterada paso a paso. Presta atención al orden de integración si los límites son funciones en lugar de constantes.
+                IMPORTANTE: Usa LaTeX para todo (inline $...$ y bloques $$...$$).
+                Estructura: título "Solución", pasos numerados con texto explicativo + fórmulas LaTeX, resultado final numérico (o expresión) destacado.`;
+      }
+      if (op.includes('Integral Triple')) {
+        return `Calcula la integral triple de f(x,y,z) = ${v.fn} con los límites de integración: x en [${v.xa||'a'}, ${v.xb||'b'}], y en [${v.ya||'c'}, ${v.yb||'d'}], z en [${v.za||'e'}, ${v.zb||'f'}].
+                Muestra la integración iterada paso a paso. Presta atención al orden de integración si los límites son funciones (calcula primero las variables dependientes).
+                IMPORTANTE: Usa LaTeX para todo (inline $...$ y bloques $$...$$).
+                Estructura: título "Solución", pasos numerados con texto explicativo + fórmulas LaTeX, resultado final numérico (o expresión) destacado.`;
+      }
+      return `Realiza la operación "${op}" sobre f = ${v.fn} paso a paso en español.
        IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
-       Aplica la definición/reglas con detalle y da el resultado final en bloque $$.`,
+       Aplica la definición/reglas con detalle y da el resultado final en bloque $$.`;
+    }
   },
   transforms: {
     label: 'Calculadora de Transformadas',
@@ -82,6 +103,30 @@ const topicConfig = {
       `Calcula "${v.type}" de la función ${v.fn} paso a paso en español.
        IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
        Aplica la tabla de transformadas o definición, muestra cada propiedad y da el resultado final en bloque $$.`,
+  },
+  algebra: {
+    label: 'Calculadora de Álgebra',
+    color: 'from-amber-500 to-orange-600',
+    fields: [
+      { key: 'fn',    label: 'Ecuación / Sistema', placeholder: 'ej: x^2 - 5x + 6 = 0', usesKeyboard: true },
+      { key: 'type',  label: 'Tipo', placeholder: '', usesKeyboard: false, isSelect: true,
+        options: ['Ecuación Lineal / Sistema', 'Ecuación Cuadrática', 'Ecuación Cúbica', 'Ecuación Exponencial/Logarítmica'] },
+    ],
+    buildPrompt: (v) =>
+      `Resuelve la ${v.type || 'Ecuación'}: ${v.fn} paso a paso en español.
+       IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.
+       Muestra la aplicación de fórmulas, factorización o propiedades detalladamente y el resultado final de las variables en bloque $$.`,
+  },
+  implicit3d: {
+    label: 'Graficador 3D — Superficies Implícitas',
+    color: 'from-sky-500 to-indigo-600',
+    fields: [
+      { key: 'fn', label: 'F(x, y, z)  →  Se graficará donde F = 0', placeholder: 'ej: x^2 + y^2 + z^2 - 9  →  esfera  |  sqrt(x^2+z^2) - y  →  cono  |  x^2 - y^2 - z  →  silla', usesKeyboard: true },
+    ],
+    buildPrompt: (v) =>
+      `Describe la superficie implícita definida por F(x,y,z) = 0 donde F = ${v.fn}.
+       Identifica el tipo de superficie (esfera, cono, hiperboloide, paraboloide, etc.) y sus parámetros principales.
+       IMPORTANTE: Usa LaTeX: inline $...$ y bloques $$...$$ para fórmulas grandes.`,
   },
 };
 
@@ -121,18 +166,22 @@ export default function CalculusCalculator({ topicId }) {
   const kbdField = cfg.fields.find(f => f.usesKeyboard);
 
   const handleCalc = async () => {
-    const missing = cfg.fields.filter(f => !f.isSelect && !f.options && !values[f.key]?.trim() && f.key !== 'a' && f.key !== 'b' && f.key !== 'order');
     if (!values[kbdField?.key]?.trim()) {
-      setError('Por favor ingresa la función.');
+      setError('Por favor ingresa la función o ecuación.');
       return;
     }
     setError(null);
     setResult(null);
     setLoading(true);
     const prompt = cfg.buildPrompt(values);
-    const res = await base44.integrations.Core.InvokeLLM({ prompt });
-    setResult(res);
-    setLoading(false);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({ prompt });
+      setResult(res);
+    } catch (e) {
+      setError('Error de conexión o validación.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -167,16 +216,61 @@ export default function CalculusCalculator({ topicId }) {
           </div>
         ))}
 
+        {/* Dynamic limits for Multivariable Integrals */}
+        {topicId === 'multivariable' && (values.op || '').includes('Integral Doble') && (
+          <div className="grid grid-cols-2 gap-4 pt-2">
+             <div>
+               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Límites x [a, b]</label>
+               <div className="flex gap-2">
+                 <Input className="h-9 text-xs" placeholder="a" value={values.xa||''} onChange={e=>setValues(v=>({...v,xa:e.target.value}))} />
+                 <Input className="h-9 text-xs" placeholder="b" value={values.xb||''} onChange={e=>setValues(v=>({...v,xb:e.target.value}))} />
+               </div>
+             </div>
+             <div>
+               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Límites y [c, d]</label>
+               <div className="flex gap-2">
+                 <Input className="h-9 text-xs" placeholder="c" value={values.ya||''} onChange={e=>setValues(v=>({...v,ya:e.target.value}))} />
+                 <Input className="h-9 text-xs" placeholder="d" value={values.yb||''} onChange={e=>setValues(v=>({...v,yb:e.target.value}))} />
+               </div>
+             </div>
+          </div>
+        )}
+        {topicId === 'multivariable' && (values.op || '').includes('Integral Triple') && (
+          <div className="grid grid-cols-3 gap-3 pt-2">
+             <div>
+               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">x [a, b]</label>
+               <div className="flex gap-1">
+                 <Input className="h-9 text-xs" placeholder="a" value={values.xa||''} onChange={e=>setValues(v=>({...v,xa:e.target.value}))} />
+                 <Input className="h-9 text-xs" placeholder="b" value={values.xb||''} onChange={e=>setValues(v=>({...v,xb:e.target.value}))} />
+               </div>
+             </div>
+             <div>
+               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">y [c, d]</label>
+               <div className="flex gap-1">
+                 <Input className="h-9 text-xs" placeholder="c" value={values.ya||''} onChange={e=>setValues(v=>({...v,ya:e.target.value}))} />
+                 <Input className="h-9 text-xs" placeholder="d" value={values.yb||''} onChange={e=>setValues(v=>({...v,yb:e.target.value}))} />
+               </div>
+             </div>
+             <div>
+               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">z [e, f]</label>
+               <div className="flex gap-1">
+                 <Input className="h-9 text-xs" placeholder="e" value={values.za||''} onChange={e=>setValues(v=>({...v,za:e.target.value}))} />
+                 <Input className="h-9 text-xs" placeholder="f" value={values.zb||''} onChange={e=>setValues(v=>({...v,zb:e.target.value}))} />
+               </div>
+             </div>
+          </div>
+        )}
+
         {/* teclado matemático */}
         {kbdField && (
-          <div>
+          <div className="pt-2">
             <button
               type="button"
               onClick={() => setShowKbd(!showKbd)}
               className="flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline"
             >
               <Keyboard className="w-3.5 h-3.5" />
-              {showKbd ? 'Ocultar teclado' : 'Mostrar teclado matemático'}
+              {showKbd ? 'Ocultar teclado matemático' : 'Mostrar teclado matemático'}
             </button>
             {showKbd && (
               <MathKeyboard
@@ -195,6 +289,31 @@ export default function CalculusCalculator({ topicId }) {
         </Button>
 
         {result && <ResultBox result={result} />}
+
+        {result && (topicId === 'limits' || topicId === 'derivatives' || topicId === 'integrals' || topicId === 'algebra' || topicId === 'transforms') && values.fn && (
+          <FunctionPlotter2D 
+            expr={values.fn} 
+            a={values.a} 
+            b={values.b} 
+          />
+        )}
+
+        {result && topicId === 'multivariable' && values.fn && (
+          <FunctionPlotter3D 
+            expr={values.fn} 
+            type={(values.op || '').includes('Triple') ? 'triple' : (values.op || '').includes('Doble') ? 'double' : 'surface'} 
+            limits={{ xa: values.xa, xb: values.xb, ya: values.ya, yb: values.yb, za: values.za, zb: values.zb }} 
+          />
+        )}
+
+        {/* Graficador 3D Implícito: siempre muestra la superficie incluso sin calcular */}
+        {topicId === 'implicit3d' && values.fn && (
+          <FunctionPlotter3D 
+            expr={values.fn} 
+            type="implicit" 
+            limits={{}} 
+          />
+        )}
       </div>
     </div>
   );
