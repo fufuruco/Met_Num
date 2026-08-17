@@ -35,7 +35,7 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 }
 
 const DEFAULT_APP_ID = import.meta.env.VITE_BASE44_APP_ID || (typeof window !== 'undefined' && window.__BASE44_APP_ID__) || "6a452807c71f0d92851a2884";
-const DEFAULT_APP_BASE_URL = import.meta.env.VITE_BASE44_APP_BASE_URL || (typeof window !== 'undefined' && window.location.origin.includes('localhost') ? 'https://solve-num-lab.base44.app' : '');
+const DEFAULT_APP_BASE_URL = import.meta.env.VITE_BASE44_APP_BASE_URL || 'https://solve-num-lab.base44.app';
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
