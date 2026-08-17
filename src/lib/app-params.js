@@ -28,26 +28,30 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 		return defaultValue;
 	}
 	const storedValue = storage.getItem(storageKey);
-	if (storedValue) {
+	if (storedValue && storedValue !== 'undefined' && storedValue !== 'null' && storedValue.trim() !== '') {
 		return storedValue;
 	}
-	return null;
+	return defaultValue || null;
 }
+
+const DEFAULT_APP_ID = import.meta.env.VITE_BASE44_APP_ID || (typeof window !== 'undefined' && window.__BASE44_APP_ID__) || "6a452807c71f0d92851a2884";
+const DEFAULT_APP_BASE_URL = import.meta.env.VITE_BASE44_APP_BASE_URL || (typeof window !== 'undefined' && window.location.origin.includes('localhost') ? 'https://solve-num-lab.base44.app' : '');
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
 		storage.removeItem('base44_access_token');
 		storage.removeItem('token');
 	}
+	const resolvedAppId = getAppParamValue("app_id", { defaultValue: DEFAULT_APP_ID }) || DEFAULT_APP_ID;
+	const resolvedBaseUrl = getAppParamValue("app_base_url", { defaultValue: DEFAULT_APP_BASE_URL }) || DEFAULT_APP_BASE_URL;
 	return {
-		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
-		token: getAppParamValue("access_token", { removeFromUrl: true }),
+		appId: resolvedAppId,
+		token: getAppParamValue("token", { removeFromUrl: true }) || getAppParamValue("access_token", { removeFromUrl: true }),
 		fromUrl: getAppParamValue("from_url", { defaultValue: window.location.href }),
 		functionsVersion: getAppParamValue("functions_version", { defaultValue: import.meta.env.VITE_BASE44_FUNCTIONS_VERSION }),
-		appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL }),
+		appBaseUrl: resolvedBaseUrl,
 	}
 }
-
 
 export const appParams = {
 	...getAppParams()

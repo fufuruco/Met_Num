@@ -12,6 +12,7 @@ import ResultBanner from '@/components/shared/ResultBanner';
 import FunctionChart from '@/components/shared/FunctionChart';
 import IterationTable from '@/components/shared/IterationTable';
 import TheorySection from '@/components/shared/TheorySection';
+import ResultActions from '@/components/shared/ResultActions';
 
 const theories = {
   trapezoidal: {
@@ -70,7 +71,7 @@ export default function Integration({ isEmbedded = false }) {
   return (
     <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
       {!isEmbedded && (
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 print:hidden">
           <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -84,7 +85,7 @@ export default function Integration({ isEmbedded = false }) {
         </div>
       )}
 
-      <Tabs value={tab} onValueChange={v => { setTab(v); setResult(null); }}>
+      <Tabs value={tab} onValueChange={v => { setTab(v); setResult(null); }} className="print:hidden">
         <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6">
           <TabsTrigger value="trapezoidal" className="text-xs px-3 py-2 rounded-lg">Trapecio</TabsTrigger>
           <TabsTrigger value="simpson13" className="text-xs px-3 py-2 rounded-lg">Simpson 1/3</TabsTrigger>
@@ -94,7 +95,7 @@ export default function Integration({ isEmbedded = false }) {
       </Tabs>
 
       <div className="space-y-5">
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card border border-border rounded-xl p-5 print:hidden">
           <h3 className="font-semibold text-sm mb-4">{theories[tab].title}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="sm:col-span-2 lg:col-span-3">
@@ -183,10 +184,19 @@ export default function Integration({ isEmbedded = false }) {
             {isIntegration && (
               <FunctionChart expr={expr} xMin={parseFloat(a) - 0.5} xMax={parseFloat(b) + 0.5} />
             )}
+            
+            <ResultActions 
+              module="Integración y Derivación" 
+              method={theories[tab].title} 
+              problemSetup={isIntegration ? { expr, a, b, n } : { expr, x, h }}
+              resultData={result}
+            />
           </>
         )}
 
-        <TheorySection {...theories[tab]} />
+        <div className="print:hidden">
+          <TheorySection {...theories[tab]} />
+        </div>
       </div>
     </div>
   );

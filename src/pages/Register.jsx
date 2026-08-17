@@ -43,7 +43,9 @@ export default function Register() {
     try {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+        localStorage.setItem("base44_access_token", result.access_token);
+        localStorage.setItem("token", result.access_token);
+        try { base44.auth.setToken(result.access_token); } catch(e) {}
       }
       window.location.href = "/";
     } catch (err) {

@@ -1,77 +1,153 @@
-# Base44 Project
+# 🧮 NumLab Engine — Laboratorio Virtual de Métodos Numéricos
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+Aplicación web interactiva para resolver problemas de **Métodos Numéricos**, **Cálculo** y **Estadística Descriptiva**, construida con React + Vite y desplegada en Base44 y GitHub Pages.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+---
 
-## Prerequisites
+## 📦 Requisitos Previos
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+Antes de empezar, asegúrate de tener instalado en tu computadora:
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+1. **Node.js** (versión 18 o superior): [https://nodejs.org](https://nodejs.org)
+2. **Git**: [https://git-scm.com](https://git-scm.com)
+3. **Base44 CLI** (opcional, solo si usas el backend de Base44):
+   ```bash
+   npm install -g base44@latest
+   ```
 
-## Run Locally
+---
 
-Run the full local development environment from the project root:
+## 🚀 Arranque Local (Ver la app en tu PC)
+
+1. Abre una terminal en la carpeta del proyecto (`D:\Otras\Mate` o donde la tengas clonada).
+
+2. Instala las dependencias (solo la primera vez o cuando se agreguen nuevas):
+   ```bash
+   npm install
+   ```
+
+3. Arranca el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+
+4. Abre tu navegador y entra a la dirección que te indique la terminal (normalmente):
+   ```
+   http://localhost:5173
+   ```
+
+5. ¡Listo! Ya puedes ver y probar la aplicación en tiempo real. Cualquier cambio que hagas en el código se reflejará automáticamente en el navegador.
+
+> **Nota:** Para detener el servidor, presiona `Ctrl + C` en la terminal.
+
+---
+
+## 📤 Actualizar el Repositorio en GitHub
+
+Cuando termines de hacer cambios en el código y quieras guardarlos en tu repositorio de GitHub:
+
+1. **Agrega todos los archivos modificados:**
+   ```bash
+   git add .
+   ```
+
+2. **Crea un commit con una descripción de lo que hiciste:**
+   ```bash
+   git commit -m "Descripción de los cambios realizados"
+   ```
+
+3. **Sube los cambios a GitHub:**
+   ```bash
+   git push origin main
+   ```
+
+> **Tip:** Si Git te rechaza el push porque hay cambios remotos que no tienes, puedes forzar la subida con:
+> ```bash
+> git push origin main --force
+> ```
+> ⚠️ Usa `--force` solo si estás seguro de que tu versión local es la correcta.
+
+---
+
+## 🌐 Actualizar la Página Web en Producción
+
+### Opción A: Publicar en GitHub Pages
+
+Tu página pública en GitHub Pages está en:
+**https://fufuruco.github.io/Met_Num/**
+
+Para actualizarla con los últimos cambios, ejecuta un solo comando:
 
 ```bash
-base44 dev
+npm run deploy:gh
 ```
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
+Este comando automáticamente:
+- Compila el proyecto con la ruta base `/Met_Num/`.
+- Sube los archivos compilados a la rama `gh-pages` de tu repositorio.
+- GitHub Pages publica la nueva versión en 1-3 minutos.
 
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
+> **Tip:** Después de ejecutar el comando, espera 2-3 minutos y abre la página en una ventana de **Incógnito** (`Ctrl + Shift + N`) para evitar ver la versión vieja por la caché del navegador.
 
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
+---
+
+### Opción B: Publicar en Base44
+
+Tu aplicación en Base44 está en:
+**https://solve-num-lab.base44.app**
+
+Para actualizarla:
+
+1. **Compila el proyecto:**
+   ```bash
+   npm run build
+   ```
+
+2. **Sube los archivos a Base44:**
+   ```bash
+   npx base44 deploy
+   ```
+
+---
+
+## 📋 Resumen Rápido de Comandos
+
+| Acción                              | Comando                                    |
+|-------------------------------------|--------------------------------------------|
+| Instalar dependencias               | `npm install`                              |
+| Arrancar servidor local             | `npm run dev`                              |
+| Compilar para producción            | `npm run build`                            |
+| Guardar cambios en Git              | `git add .` → `git commit -m "msg"` → `git push origin main` |
+| Publicar en GitHub Pages            | `npm run deploy:gh`                        |
+| Publicar en Base44                  | `npm run build` → `npx base44 deploy`     |
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+D:\Otras\Mate\
+├── src/                        ← Código fuente principal
+│   ├── pages/                  ← Páginas (Home, Statistics, Calculus, etc.)
+│   ├── components/             ← Componentes reutilizables (Sidebar, Tabs, etc.)
+│   ├── lib/                    ← Lógica de cálculo (statisticsMethods.js, etc.)
+│   └── App.jsx                 ← Enrutador principal
+├── base44/                     ← Configuración de Base44
+├── dist/                       ← Archivos compilados (se genera con npm run build)
+├── package.json                ← Dependencias y scripts
+├── vite.config.js              ← Configuración de Vite
+└── README.md                   ← Este archivo
 ```
 
-In a Base44 project this lives in `base44/config.jsonc`.
+---
 
-## Run Only The Frontend
+## 🛠️ Tecnologías Utilizadas
 
-If you only want to work on the frontend against the hosted Base44 backend, run:
-
-```bash
-npm run dev
-```
-
-Open the local URL printed by Vite.
-
-## Use The Hosted Backend
-
-For frontend-only development, create or update `.env.local` in the project root:
-
-```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
-```
-
-`VITE_BASE44_APP_ID` identifies the Base44 app.
-
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
-
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
-
-```bash
-base44 dashboard open
-```
-
-## Docs & Support
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+- **React 18** — Interfaz de usuario
+- **Vite** — Servidor de desarrollo y empaquetador
+- **Tailwind CSS** — Estilos utilitarios
+- **Recharts** — Gráficos interactivos (histogramas, regresión)
+- **KaTeX** — Renderizado de fórmulas matemáticas
+- **math.js** — Motor de evaluación de expresiones matemáticas
+- **Base44** — Backend y hosting
+- **GitHub Pages** — Hosting alternativo gratuito

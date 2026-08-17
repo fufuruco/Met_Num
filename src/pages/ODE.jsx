@@ -11,6 +11,7 @@ import StepByStep from '@/components/shared/StepByStep';
 import IterationTable from '@/components/shared/IterationTable';
 import FunctionChart from '@/components/shared/FunctionChart';
 import TheorySection from '@/components/shared/TheorySection';
+import ResultActions from '@/components/shared/ResultActions';
 
 const theories = {
   euler: {
@@ -83,7 +84,7 @@ export default function ODE({ isEmbedded = false }) {
   return (
     <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
       {!isEmbedded && (
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 print:hidden">
           <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -98,7 +99,7 @@ export default function ODE({ isEmbedded = false }) {
       )}
 
       <Tabs value={tab} onValueChange={v => { setTab(v); setResult(null); }}>
-        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6">
+        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6 print:hidden">
           <TabsTrigger value="euler" className="text-xs px-3 py-2 rounded-lg">Euler</TabsTrigger>
           <TabsTrigger value="eulerImproved" className="text-xs px-3 py-2 rounded-lg">Euler Mejorado</TabsTrigger>
           <TabsTrigger value="rk2" className="text-xs px-3 py-2 rounded-lg">RK2</TabsTrigger>
@@ -107,7 +108,7 @@ export default function ODE({ isEmbedded = false }) {
       </Tabs>
 
       <div className="space-y-5">
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card border border-border rounded-xl p-5 print:hidden">
           <h3 className="font-semibold text-sm mb-4">{theories[tab].title}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="sm:col-span-2 lg:col-span-3">
@@ -152,15 +153,24 @@ export default function ODE({ isEmbedded = false }) {
             <StepByStep steps={result.steps} />
 
             <FunctionChart
+              expr={expr}
               points={result.points}
               xMin={parseFloat(x0)}
               xMax={parseFloat(xEnd)}
               yLabel="y(x)"
             />
+            <ResultActions 
+              module="Ecuaciones Diferenciales" 
+              method={theories[tab].title} 
+              problemSetup={{ expr, x0, y0, xEnd, h }} 
+              resultData={result} 
+            />
           </>
         )}
 
-        <TheorySection {...theories[tab]} />
+        <div className="print:hidden">
+          <TheorySection {...theories[tab]} />
+        </div>
       </div>
     </div>
   );

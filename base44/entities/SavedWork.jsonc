@@ -1,0 +1,35 @@
+{
+  "name": "SavedWork",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who saved the work"
+    },
+    "module": {
+      "type": "string",
+      "description": "The section or module of the app (e.g. Integración, Estadística)"
+    },
+    "method": {
+      "type": "string",
+      "description": "The numerical method used"
+    },
+    "problemSetup": {
+      "type": "object",
+      "description": "The input parameters provided by the user"
+    },
+    "resultData": {
+      "type": "object",
+      "description": "The result computed"
+    },
+    "createdAt": {
+      "type": "string",
+      "description": "Timestamp when the work was saved"
+    }
+  },
+  "required": [
+    "userId",
+    "module",
+    "method"
+  ]
+}

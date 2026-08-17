@@ -19,7 +19,12 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      const result = await base44.auth.loginViaEmailPassword(email, password);
+      if (result?.access_token) {
+        localStorage.setItem("base44_access_token", result.access_token);
+        localStorage.setItem("token", result.access_token);
+        try { base44.auth.setToken(result.access_token); } catch(e) {}
+      }
       window.location.href = "/";
     } catch (err) {
       setError(err.message || "Invalid email or password");
