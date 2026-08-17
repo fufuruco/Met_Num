@@ -43,17 +43,21 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Public routes - calculators and methods accessible without login */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/nonlinear" element={<NonLinear />} />
+        <Route path="/matrices" element={<Matrices />} />
+        <Route path="/linear-systems" element={<LinearSystems />} />
+        <Route path="/integration" element={<Integration />} />
+        <Route path="/ode" element={<ODE />} />
+        <Route path="/calculus" element={<Calculus />} />
+        <Route path="/methods" element={<NumericalMethods />} />
+        <Route path="/statistics" element={<Statistics />} />
+      </Route>
+      {/* Protected routes - require authentication */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/nonlinear" element={<NonLinear />} />
-          <Route path="/matrices" element={<Matrices />} />
-          <Route path="/linear-systems" element={<LinearSystems />} />
-          <Route path="/integration" element={<Integration />} />
-          <Route path="/ode" element={<ODE />} />
-          <Route path="/calculus" element={<Calculus />} />
-          <Route path="/methods" element={<NumericalMethods />} />
-          <Route path="/statistics" element={<Statistics />} />
           <Route path="/mis-trabajos" element={<SavedWorks />} />
         </Route>
       </Route>
