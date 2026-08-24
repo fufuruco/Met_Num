@@ -4,6 +4,12 @@
     <script>
       (function() {
         var path = window.location.pathname;
+        var isGitHubPagesRoot = window.location.hostname === 'fufuruco.github.io' &&
+          (path === '/Met_Num' || path === '/Met_Num/');
+        if (isGitHubPagesRoot && !window.location.hash) {
+          window.location.replace(window.location.pathname.replace(/\/$/, '') + '/#/');
+          return;
+        }
         if ((path.endsWith('/reset-password') || path.endsWith('/reset-password/')) && !window.location.hash) {
           var search = window.location.search;
           var cleanPath = path.replace(/\/reset-password\/?$/, '');
