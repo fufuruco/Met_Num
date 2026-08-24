@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Binary, Grid3X3, GitBranch, TrendingUp, Sigma, ArrowRight, BookOpen, BarChart2 } from 'lucide-react';
+import { Binary, Sigma, ArrowRight, BookOpen, BarChart2 } from 'lucide-react';
 
 const modules = [
   {

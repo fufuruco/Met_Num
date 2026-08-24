@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, GitBranch, Play } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { gaussElimination, gaussJordan, luDecomposition, jacobi, gaussSeidel } f
 import StepByStep from '@/components/shared/StepByStep';
 import ResultBanner from '@/components/shared/ResultBanner';
 import IterationTable from '@/components/shared/IterationTable';
-import ResultActions from '@/components/shared/ResultActions';
 
 const methods = [
   { id: 'gauss', label: 'Gauss' },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Scatter, ComposedChart } from 'recharts';
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Scatter, ComposedChart } from 'recharts';
 import { generatePlotPoints } from '@/lib/mathParser';
 
 export default function FunctionChart({ expr, xMin, xMax, roots = [], points = [], yLabel = "f(x)" }) {

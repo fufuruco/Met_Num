@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { Folder, Loader2, Calendar, Eye, Trash2, Printer, ArrowLeft, ArrowUpRight, BarChart2 } from 'lucide-react';
+import { Folder, Loader2, Calendar, Eye, Trash2, Printer, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import MathRenderer from '@/components/calculus/MathRenderer';

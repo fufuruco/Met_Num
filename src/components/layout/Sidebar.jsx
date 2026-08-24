@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Binary, Grid3X3, GitBranch, 
-  TrendingUp, Sigma, X, Menu, BookOpen, BarChart2, LogOut, Folder
+  LayoutDashboard, Binary, Sigma, X, BookOpen, BarChart2, LogOut, Folder
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
