@@ -34,7 +34,8 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", window.location.origin + window.location.pathname + "#/" );
+    const callbackUrl = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/#/`;
+    base44.auth.loginWithProvider("google", callbackUrl);
   };
 
   return (

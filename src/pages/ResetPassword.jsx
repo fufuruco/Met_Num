@@ -9,7 +9,7 @@ import AuthLayout from "@/components/AuthLayout";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
+  const resetToken = searchParams.get("token") || new URLSearchParams(window.location.hash.split('?')[1] || '').get('token');
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +26,7 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       await base44.auth.resetPassword({ resetToken, newPassword });
-      window.location.href = "/#/login";
+      window.location.hash = "#/login";
     } catch (err) {
       setError(err.message || "Failed to reset password");
     } finally {

@@ -39,6 +39,9 @@ jobs:
       - name: Add .nojekyll
         run: touch dist/.nojekyll
 
+      - name: Support direct SPA routes
+        run: cp dist/index.html dist/404.html
+
       - name: Upload artifact for Pages
         uses: actions/upload-pages-artifact@v5
         with:
