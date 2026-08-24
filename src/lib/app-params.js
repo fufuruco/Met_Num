@@ -36,14 +36,19 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 
 const DEFAULT_APP_ID = import.meta.env.VITE_BASE44_APP_ID || (typeof window !== 'undefined' && window.__BASE44_APP_ID__) || "6a452807c71f0d92851a2884";
 const DEFAULT_APP_BASE_URL = import.meta.env.VITE_BASE44_APP_BASE_URL || 'https://solve-num-lab.base44.app';
+const isGitHubPages = typeof window !== 'undefined' && window.location.hostname === 'fufuruco.github.io';
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
 		storage.removeItem('base44_access_token');
 		storage.removeItem('token');
 	}
-	const resolvedAppId = getAppParamValue("app_id", { defaultValue: DEFAULT_APP_ID }) || DEFAULT_APP_ID;
-	const resolvedBaseUrl = getAppParamValue("app_base_url", { defaultValue: DEFAULT_APP_BASE_URL }) || DEFAULT_APP_BASE_URL;
+	const resolvedAppId = isGitHubPages
+		? DEFAULT_APP_ID
+		: getAppParamValue("app_id", { defaultValue: DEFAULT_APP_ID }) || DEFAULT_APP_ID;
+	const resolvedBaseUrl = isGitHubPages
+		? DEFAULT_APP_BASE_URL
+		: getAppParamValue("app_base_url", { defaultValue: DEFAULT_APP_BASE_URL }) || DEFAULT_APP_BASE_URL;
 	return {
 		appId: resolvedAppId,
 		token: getAppParamValue("token", { removeFromUrl: true }) || getAppParamValue("access_token", { removeFromUrl: true }),
