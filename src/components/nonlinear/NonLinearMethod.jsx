@@ -10,6 +10,7 @@ import IterationTable from '@/components/shared/IterationTable';
 import StepByStep from '@/components/shared/StepByStep';
 import FunctionChart from '@/components/shared/FunctionChart';
 import TheorySection from '@/components/shared/TheorySection';
+import ResultActions from '@/components/shared/ResultActions';
 
 const theoryData = {
   bisection: {
@@ -122,7 +123,7 @@ export default function NonLinearMethod({ methodId, methodName }) {
   return (
     <div className="space-y-5">
       {/* Input Form */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-5 print:hidden">
         <h3 className="font-semibold text-sm mb-4">Datos de entrada — {methodName}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2 lg:col-span-3">
@@ -210,10 +211,18 @@ export default function NonLinearMethod({ methodId, methodName }) {
             xMax={chartXMax}
             roots={result.root !== undefined ? [result.root] : []}
           />
+          <ResultActions 
+            module="Ecuaciones No Lineales" 
+            method={methodName} 
+            problemSetup={inputs} 
+            resultData={result} 
+          />
         </>
       )}
 
-      <TheorySection {...theory} />
+      <div className="print:hidden">
+        <TheorySection {...theory} />
+      </div>
     </div>
   );
 }

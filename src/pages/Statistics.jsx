@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart2, Play, Table, HelpCircle } from 'lucide-react';
+import { ArrowLeft, BarChart2, Play, Table } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { analyzeStatistics, fitRegression } from '@/lib/statisticsMethods';
 import ResultBanner from '@/components/shared/ResultBanner';
+import ResultActions from '@/components/shared/ResultActions';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ComposedChart, Scatter, Line, Legend
@@ -36,7 +37,7 @@ export default function Statistics() {
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-6 print:hidden">
         <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
@@ -51,7 +52,7 @@ export default function Statistics() {
 
       {/* Tabs principal */}
       <Tabs value={activeModule} onValueChange={setActiveModule} className="space-y-6">
-        <TabsList className="bg-muted/50 p-1 rounded-xl w-full sm:w-auto grid sm:flex grid-cols-2">
+        <TabsList className="bg-muted/50 p-1 rounded-xl w-full sm:w-auto grid sm:flex grid-cols-2 print:hidden">
           <TabsTrigger value="descriptive" className="rounded-lg text-xs font-semibold px-4 py-2">
             Estadística Descriptiva
           </TabsTrigger>
@@ -62,7 +63,7 @@ export default function Statistics() {
 
         {/* TAB 1: ESTADÍSTICA DESCRIPTIVA */}
         <TabsContent value="descriptive" className="space-y-5">
-          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm print:hidden">
             <h3 className="font-semibold text-sm mb-4 text-slate-800">Ingreso de Datos Brutos</h3>
             <div className="space-y-4">
               <div>
@@ -353,7 +354,7 @@ export default function Statistics() {
                               </tr>
                             ))}
                             <tr className="bg-slate-50 font-bold text-slate-800">
-                              <td className="py-2 px-3" colSpan="3">Suma de diferencias al cuadrado (Σ):</td>
+                              <td className="py-2 px-3" colSpan={3}>Suma de diferencias al cuadrado (Σ):</td>
                               <td className="py-2 px-3 text-right font-mono text-indigo-700">
                                 {result.sumSquaredDiffs.toFixed(6)}
                               </td>
@@ -413,13 +414,19 @@ export default function Statistics() {
                   </div>
                 </div>
               </div>
+              <ResultActions 
+                module="Análisis Estadístico" 
+                method="Estadística Descriptiva" 
+                problemSetup={{ data: inputData }} 
+                resultData={result} 
+              />
             </>
           )}
         </TabsContent>
 
         {/* TAB 2: REGRESIÓN Y AJUSTE */}
         <TabsContent value="regression" className="space-y-5">
-          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm print:hidden">
             <h3 className="font-semibold text-sm mb-4 text-slate-800">Ingreso de Datos de Dispersión (X y Y)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -621,6 +628,12 @@ export default function Statistics() {
                   </div>
                 </div>
               </div>
+              <ResultActions 
+                module="Análisis Estadístico" 
+                method="Regresión y Ajuste" 
+                problemSetup={{ x: inputX, y: inputY }} 
+                resultData={resultReg} 
+              />
             </>
           )}
         </TabsContent>

@@ -25,7 +25,7 @@ export default function Calculus() {
   return (
     <div className="flex h-full min-h-screen">
       {/* Sidebar de temas */}
-      <aside className="hidden lg:flex flex-col w-56 flex-shrink-0 border-r border-border bg-muted/20 p-4 gap-1">
+      <aside className="hidden lg:flex flex-col w-56 flex-shrink-0 border-r border-border bg-muted/20 p-4 gap-1 print:hidden">
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-2">Temas</p>
         {calcTopicList.map(t => (
           <button
@@ -50,7 +50,7 @@ export default function Calculus() {
         <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-8">
 
           {/* Header */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 print:hidden">
             <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </Link>
@@ -64,7 +64,7 @@ export default function Calculus() {
           </div>
 
           {/* Tabs móvil */}
-          <div className="flex lg:hidden gap-1 flex-wrap">
+          <div className="flex lg:hidden gap-1 flex-wrap print:hidden">
             {calcTopicList.map(t => (
               <button
                 key={t.id}
@@ -89,7 +89,7 @@ export default function Calculus() {
             </div>
 
             {/* FORMULARIO */}
-            <div className="space-y-4">
+            <div className="space-y-4 print:hidden">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input

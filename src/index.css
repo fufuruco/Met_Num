@@ -74,3 +74,66 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(220, 15%, 65%);
 }
+
+/* Print styles - libera restricciones de altura y overflow para imprimir todo el contenido */
+@media print {
+  html, body, #root {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Liberar el layout principal */
+  .flex.h-screen.overflow-hidden {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Liberar el contenedor del contenido principal */
+  .flex-1.overflow-y-auto,
+  .flex-1.flex.flex-col.min-w-0.overflow-hidden {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ocultar sidebar y header móvil */
+  aside {
+    display: none !important;
+  }
+
+  header {
+    display: none !important;
+  }
+
+  /* Asegurar que las tablas no se corten */
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Ocultar elementos interactivos y de navegación */
+  aside,
+  header,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Forzar la expansión de tablas y contenedores con scroll para mostrar todos los datos en papel */
+  .max-h-60,
+  .max-h-80,
+  .max-h-\[85vh\],
+  .overflow-y-auto,
+  .overflow-x-auto {
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+}

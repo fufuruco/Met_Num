@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, GitBranch, Play } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -65,7 +65,7 @@ export default function LinearSystems({ isEmbedded = false }) {
   return (
     <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
       {!isEmbedded && (
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 print:hidden">
           <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -80,7 +80,7 @@ export default function LinearSystems({ isEmbedded = false }) {
       )}
 
       <Tabs value={tab} onValueChange={v => { setTab(v); setResult(null); }}>
-        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6">
+        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6 print:hidden">
           {methods.map(m => (
             <TabsTrigger key={m.id} value={m.id} className="text-xs px-3 py-2 rounded-lg">{m.label}</TabsTrigger>
           ))}

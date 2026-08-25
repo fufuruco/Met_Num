@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Keyboard, Play, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import MathKeyboard from '@/components/shared/MathKeyboard';
 import MathRenderer from '@/components/calculus/MathRenderer';
-import FunctionPlotter2D from '@/components/calculus/FunctionPlotter2D';
-import FunctionPlotter3D from '@/components/calculus/FunctionPlotter3D';
+import ResultActions from '@/components/shared/ResultActions';
 
 // ── configs por tema ─────────────────────────────────────────────────────────
 const topicConfig = {
@@ -187,14 +186,15 @@ export default function CalculusCalculator({ topicId }) {
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       {/* header */}
-      <div className={`bg-gradient-to-r ${cfg.color} px-5 py-3`}>
+      <div className={`bg-gradient-to-r ${cfg.color} px-5 py-3 print:hidden`}>
         <h2 className="text-white font-bold text-sm">{cfg.label}</h2>
       </div>
 
       <div className="p-5 space-y-4">
         {/* campos */}
-        {cfg.fields.map(f => (
-          <div key={f.key}>
+        <div className="space-y-4 print:hidden">
+          {cfg.fields.map(f => (
+            <div key={f.key}>
             <label className="block text-xs font-semibold text-muted-foreground mb-1.5">{f.label}</label>
             {f.isSelect ? (
               <select
@@ -287,32 +287,18 @@ export default function CalculusCalculator({ topicId }) {
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
           {loading ? 'Calculando...' : 'Calcular paso a paso'}
         </Button>
+        </div>
 
-        {result && <ResultBox result={result} />}
-
-        {result && (topicId === 'limits' || topicId === 'derivatives' || topicId === 'integrals' || topicId === 'algebra' || topicId === 'transforms') && values.fn && (
-          <FunctionPlotter2D 
-            expr={values.fn} 
-            a={values.a} 
-            b={values.b} 
-          />
-        )}
-
-        {result && topicId === 'multivariable' && values.fn && (
-          <FunctionPlotter3D 
-            expr={values.fn} 
-            type={(values.op || '').includes('Triple') ? 'triple' : (values.op || '').includes('Doble') ? 'double' : 'surface'} 
-            limits={{ xa: values.xa, xb: values.xb, ya: values.ya, yb: values.yb, za: values.za, zb: values.zb }} 
-          />
-        )}
-
-        {/* Graficador 3D Implícito: siempre muestra la superficie incluso sin calcular */}
-        {topicId === 'implicit3d' && values.fn && (
-          <FunctionPlotter3D 
-            expr={values.fn} 
-            type="implicit" 
-            limits={{}} 
-          />
+        {result && (
+          <>
+            <ResultBox result={result} />
+            <ResultActions 
+              module="Formulario de Cálculo" 
+              method={cfg.label} 
+              problemSetup={values} 
+              resultData={{ output: result }} 
+            />
+          </>
         )}
       </div>
     </div>

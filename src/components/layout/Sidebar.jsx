@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, Binary, Grid3X3, GitBranch, 
-  TrendingUp, Sigma, X, Menu, BookOpen, BarChart2, LogOut
+import {
+  LayoutDashboard, Binary, Sigma, X, BookOpen, BarChart2, LogOut, Folder
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -11,11 +10,12 @@ const modules = [
   { label: 'Métodos Numéricos', path: '/methods', icon: Binary },
   { label: 'Formulario de Cálculo', path: '/calculus', icon: BookOpen },
   { label: 'Análisis Estadístico', path: '/statistics', icon: BarChart2 },
+  { label: 'Mis Trabajos', path: '/mis-trabajos', icon: Folder },
 ];
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { user, logout, navigateToLogin } = useAuth();
 
   return (
     <>
@@ -68,21 +68,35 @@ export default function Sidebar({ open, onClose }) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-[hsl(var(--sidebar-border))]">
-          <div className="px-3 py-2 rounded-lg bg-[hsl(var(--sidebar-accent))] mb-4">
-            <p className="text-[11px] opacity-70">Laboratorio Virtual</p>
-            <p className="text-xs font-semibold text-white">Ingeniería</p>
-          </div>
-          
-          {isAuthenticated && (
+        <div className="p-4 border-t border-[hsl(var(--sidebar-border))] space-y-4">
+          {user ? (
+            <>
+              <button
+                onClick={() => logout()}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar Sesión</span>
+              </button>
+              
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 shadow-md">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30 border border-blue-400/20">
+                  <span className="text-white font-bold text-sm">
+                    {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                  </span>
+                </div>
+                <div className="overflow-hidden flex-1">
+                  <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-0.5">Sesión Activa</p>
+                  <p className="text-xs font-medium text-slate-200 truncate" title={user.email}>{user.email}</p>
+                </div>
+              </div>
+            </>
+          ) : (
             <button
-              onClick={() => {
-                logout(true);
-              }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white transition-colors text-sm font-medium"
+              onClick={() => navigateToLogin && navigateToLogin()}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all"
             >
-              <LogOut className="w-4 h-4" />
-              Cerrar sesión
+              <span>Iniciar Sesión</span>
             </button>
           )}
         </div>

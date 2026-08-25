@@ -18,7 +18,7 @@ export default function NonLinear({ isEmbedded = false }) {
   return (
     <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
       {!isEmbedded && (
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 print:hidden">
           <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -33,7 +33,7 @@ export default function NonLinear({ isEmbedded = false }) {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6">
+        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1.5 rounded-xl mb-6 print:hidden">
           {methods.map(m => (
             <TabsTrigger key={m.id} value={m.id} className="text-xs px-3 py-2 rounded-lg">
               {m.label}

@@ -21,10 +21,13 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
-      // Re-check auth state so the context knows we're now authenticated
-      await checkAppState();
-      window.location.hash = "#/";
+      const result = await base44.auth.loginViaEmailPassword(email, password);
+      if (result?.access_token) {
+        localStorage.setItem("base44_access_token", result.access_token);
+        localStorage.setItem("token", result.access_token);
+        try { base44.auth.setToken(result.access_token); } catch(e) {}
+      }
+      window.location.href = "/";
     } catch (err) {
       console.error("Login failed:", err);
       setError(err.message || "Invalid email or password");

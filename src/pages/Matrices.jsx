@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Grid3X3 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Play } from 'lucide-react';
 import { addMatrices, subtractMatrices, multiplyMatrices, determinant, inverse, transpose } from '@/lib/matrixMethods';
 import StepByStep from '@/components/shared/StepByStep';
 import ResultBanner from '@/components/shared/ResultBanner';
+import ResultActions from '@/components/shared/ResultActions';
 
 function MatrixInput({ label, rows, cols, matrix, onChange }) {
   return (
@@ -98,7 +98,7 @@ export default function Matrices({ isEmbedded = false }) {
   return (
     <div className={isEmbedded ? "max-w-5xl mx-auto" : "p-6 lg:p-10 max-w-5xl mx-auto"}>
       {!isEmbedded && (
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 print:hidden">
           <Link to="/" className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -113,8 +113,8 @@ export default function Matrices({ isEmbedded = false }) {
       )}
 
       <div className="space-y-5">
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="flex flex-wrap gap-4 mb-5 items-end">
+        <div className="bg-card border border-border rounded-xl p-5 print:border-none print:p-0">
+          <div className="flex flex-wrap gap-4 mb-5 items-end print:hidden">
             <div>
               <Label className="text-xs mb-1.5 block">Operación</Label>
               <Select value={operation} onValueChange={v => { setOperation(v); setResult(null); }}>
@@ -164,6 +164,12 @@ export default function Matrices({ isEmbedded = false }) {
               <MatrixDisplay label="Resultado" matrix={result.result} />
             ) : null}
             <StepByStep steps={result.steps} />
+            <ResultActions 
+              module="Cálculo Matricial" 
+              method={tab} 
+              problemSetup={{ matrixA: matA, matrixB: (isBinary ? matB : undefined) }} 
+              resultData={result} 
+            />
           </>
         )}
       </div>

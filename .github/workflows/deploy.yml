@@ -1,52 +1,40 @@
-name: Build and Deploy (GitHub Pages)
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    branches:
+      - v2
 
 jobs:
-  build-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Node
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
 
       - name: Build
-        run: npx vite build --base=/Met_Num/
-
-      - name: Add .nojekyll
-        run: touch dist/.nojekyll
-
-      - name: Support direct SPA routes
-        run: cp dist/index.html dist/404.html
-
-      - name: Upload artifact for Pages
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
+        run: npm run build:gh
 
       - name: Deploy to GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Deploy Pages artifact
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
