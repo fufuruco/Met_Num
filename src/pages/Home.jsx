@@ -1,19 +1,52 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Binary, Sigma, ArrowRight, BookOpen, BarChart2 } from 'lucide-react';
+import {
+  Binary,
+  Sigma,
+  ArrowRight,
+  BookOpen,
+  BarChart2,
+  Sparkles,
+  LineChart,
+  TableProperties,
+} from 'lucide-react';
 
 const modules = [
+  {
+    title: 'Álgebra Simbólica',
+    desc: 'Simplificación, factorización, ecuaciones, derivadas e integrales con paso a paso detallado',
+    icon: Sparkles,
+    path: '/algebra',
+    color: 'from-indigo-500 via-purple-500 to-pink-600',
+    badge: 'Symbolab Engine',
+  },
+  {
+    title: 'Graficador 2D',
+    desc: 'Trazado dinámico de curvas y funciones matemáticas en tiempo real con zoom interactivo',
+    icon: LineChart,
+    path: '/grapher',
+    color: 'from-blue-500 to-cyan-600',
+    badge: 'Curvas 2D',
+  },
+  {
+    title: 'Estadística Avanzada',
+    desc: 'Pruebas t-Student, ANOVA de 1 vía, Chi-Cuadrado y distribuciones de probabilidad',
+    icon: TableProperties,
+    path: '/advanced-statistics',
+    color: 'from-emerald-500 to-teal-600',
+    badge: 'SPSS Engine',
+  },
   {
     title: 'Métodos Numéricos',
     desc: 'Ecuaciones No Lineales, Cálculo Matricial, Sistemas Lineales, Integración y ODEs',
     icon: Binary,
     path: '/methods',
     color: 'from-blue-500 to-indigo-600',
-    badge: '5 módulos',
+    badge: '5 módulos numéricos',
   },
   {
     title: 'Formulario de Cálculo',
-    desc: 'Límites, Derivadas, Integrales, Multivariable, Laplace, Fourier',
+    desc: 'Límites, Derivadas, Integrales, Multivariable, Transformadas de Laplace y Fourier',
     icon: BookOpen,
     path: '/calculus',
     color: 'from-rose-500 to-pink-600',
@@ -21,7 +54,7 @@ const modules = [
   },
   {
     title: 'Análisis Estadístico',
-    desc: 'Media, Mediana, Moda, Varianza, Desviación Estándar e Histograma',
+    desc: 'Media, Mediana, Moda, Varianza, Desviación Estándar, Frecuencias e Histograma',
     icon: BarChart2,
     path: '/statistics',
     color: 'from-sky-500 to-indigo-600',

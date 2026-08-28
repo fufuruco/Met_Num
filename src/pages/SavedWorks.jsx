@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import { authClient } from '@/api/authClient';
 import { Folder, Loader2, Calendar, Eye, Trash2, Printer, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,11 +20,10 @@ export default function SavedWorks() {
     }
   }, [user]);
 
-  const fetchWorks = () => {
+  const fetchWorks = async () => {
     try {
       setLoading(true);
-      const all = JSON.parse(localStorage.getItem('saved_works') || '[]');
-      const data = all.filter((w) => w.userId === user?.id);
+      const data = await authClient.getWorks();
       setWorks(data || []);
     } catch (err) {
       console.error('Error al cargar trabajos:', err);
@@ -32,11 +32,9 @@ export default function SavedWorks() {
     }
   };
 
-  const handleDeleteWork = (id) => {
+  const handleDeleteWork = async (id) => {
     try {
-      const all = JSON.parse(localStorage.getItem('saved_works') || '[]');
-      const updated = all.filter((w) => w.id !== id);
-      localStorage.setItem('saved_works', JSON.stringify(updated));
+      await authClient.deleteWork(id);
       setWorks((prev) => prev.filter((w) => w.id !== id));
       if (selectedWork?.id === id) {
         setSelectedWork(null);

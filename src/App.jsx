@@ -15,11 +15,15 @@ import ODE from '@/pages/ODE';
 import Calculus from '@/pages/Calculus';
 import NumericalMethods from '@/pages/NumericalMethods';
 import Statistics from '@/pages/Statistics';
+import Algebra from '@/pages/Algebra';
+import Grapher from '@/pages/Grapher';
+import AdvancedStatistics from '@/pages/AdvancedStatistics';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import SavedWorks from '@/pages/SavedWorks';
+import AdminDashboard from '@/pages/AdminDashboard';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Navigate } from 'react-router-dom';
@@ -36,31 +40,35 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Render the main app - auth is handled per-page or in the sidebar
+  // Render the main app
   return (
     <Routes>
+      {/* Rutas públicas de autenticación */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      {/* Public routes - calculators and methods accessible without login */}
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/nonlinear" element={<NonLinear />} />
-        <Route path="/matrices" element={<Matrices />} />
-        <Route path="/linear-systems" element={<LinearSystems />} />
-        <Route path="/integration" element={<Integration />} />
-        <Route path="/ode" element={<ODE />} />
-        <Route path="/calculus" element={<Calculus />} />
-        <Route path="/methods" element={<NumericalMethods />} />
-        <Route path="/statistics" element={<Statistics />} />
-      </Route>
-      {/* Protected routes - require authentication */}
+
+      {/* Todas las rutas de la app requieren autenticación */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AppLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/algebra" element={<Algebra />} />
+          <Route path="/grapher" element={<Grapher />} />
+          <Route path="/nonlinear" element={<NonLinear />} />
+          <Route path="/matrices" element={<Matrices />} />
+          <Route path="/linear-systems" element={<LinearSystems />} />
+          <Route path="/integration" element={<Integration />} />
+          <Route path="/ode" element={<ODE />} />
+          <Route path="/calculus" element={<Calculus />} />
+          <Route path="/methods" element={<NumericalMethods />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/advanced-statistics" element={<AdvancedStatistics />} />
           <Route path="/mis-trabajos" element={<SavedWorks />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Route>
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

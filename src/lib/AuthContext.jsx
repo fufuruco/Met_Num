@@ -1,34 +1,77 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { authClient } from '@/api/authClient';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // Initialize user from cached token/user if present for 0ms initial load
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('auth_user_cache');
+      const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+      if (token && cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {}
+    return null;
+  });
+
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    // Directly check if the user is authenticated via the SDK.
-    // The SDK client already bootstraps the token from localStorage/URL
-    // in base44Client.js, so base44.auth.me() will have the correct header.
-    base44.auth.me()
-      .then((currentUser) => {
-        setUser(currentUser);
-      })
-      .catch(() => {
-        // Not logged in or token invalid - that's fine, just show as logged out
-        setUser(null);
-      })
-      .finally(() => {
-        setIsLoadingAuth(false);
-      });
+    checkUser();
   }, []);
 
+  const checkUser = async () => {
+    try {
+      const token = authClient.getToken();
+      if (!token) {
+        setUser(null);
+        localStorage.removeItem('auth_user_cache');
+        return;
+      }
+      const currentUser = await authClient.getMe();
+      if (currentUser) {
+        setUser(currentUser);
+        localStorage.setItem('auth_user_cache', JSON.stringify(currentUser));
+      } else {
+        setUser(null);
+        localStorage.removeItem('auth_user_cache');
+      }
+    } catch (e) {
+      // Keep existing user state if network glitch
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const login = async (email, password) => {
+    const data = await authClient.login(email, password);
+    setUser(data.user);
+    localStorage.setItem('auth_user_cache', JSON.stringify(data.user));
+    setIsLoadingAuth(false);
+    return data;
+  };
+
+  const register = async (name, email, password) => {
+    const data = await authClient.register(name, email, password);
+    setUser(data.user);
+    localStorage.setItem('auth_user_cache', JSON.stringify(data.user));
+    setIsLoadingAuth(false);
+    return data;
+  };
+
+  const loginAsGuest = () => {
+    const guest = authClient.loginAsGuest();
+    setUser(guest);
+    setIsLoadingAuth(false);
+    return guest;
+  };
+
   const logout = () => {
+    authClient.logout();
     setUser(null);
-    try { localStorage.removeItem('base44_access_token'); } catch(e) {}
-    try { localStorage.removeItem('token'); } catch(e) {}
-    try { if (base44?.auth?.setToken) base44.auth.setToken(null); } catch(e) {}
+    localStorage.removeItem('auth_user_cache');
     window.location.href = '/login';
   };
 
@@ -36,20 +79,51 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/login';
   };
 
+  const useCredit = async () => {
+    const res = await authClient.useCredit();
+    if (res.success && user) {
+      const updated = {
+        ...user,
+        dailyCredits: res.remaining,
+        role: res.isPremium ? 'premium' : user.role,
+      };
+      setUser(updated);
+      localStorage.setItem('auth_user_cache', JSON.stringify(updated));
+    }
+    return res;
+  };
+
+  const redeemCode = async (code) => {
+    const res = await authClient.redeemCode(code);
+    if (res.user) {
+      setUser(res.user);
+      localStorage.setItem('auth_user_cache', JSON.stringify(res.user));
+    }
+    return res;
+  };
+
+  const isPremium = user?.role === 'premium' || user?.role === 'admin';
+  const credits = isPremium ? 999 : (user?.dailyCredits ?? 5);
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoadingAuth,
-      isLoadingPublicSettings: false,
-      authError: null,
-      appPublicSettings: null,
-      authChecked: !isLoadingAuth,
-      logout,
-      navigateToLogin,
-      checkUserAuth: () => {},
-      checkAppState: () => {},
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isPremium,
+        credits,
+        isLoadingAuth,
+        authChecked: !isLoadingAuth,
+        login,
+        register,
+        loginAsGuest,
+        logout,
+        navigateToLogin,
+        useCredit,
+        redeemCode,
+        refreshUser: checkUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

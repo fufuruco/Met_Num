@@ -1,74 +1,97 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Mail, ArrowLeft, Loader2 } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { authClient } from '@/api/authClient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { KeyRound, Mail, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import AuthLayout from '@/components/AuthLayout';
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
+
     try {
-      const resetUrl = window.location.origin + "/#/reset-password";
-      await base44.auth.resetPasswordRequest(email, resetUrl);
+      const data = await authClient.forgotPassword(email);
+      setSuccess(data);
     } catch (err) {
-      console.error("Reset password request failed:", err);
-      // Always show success regardless
+      setError(err.message || 'Error al procesar la solicitud.');
     } finally {
       setLoading(false);
-      setSent(true);
     }
   };
 
   return (
     <AuthLayout
-      icon={Mail}
-      title="Reset password"
-      subtitle="We'll send you a link to reset it"
+      icon={KeyRound}
+      title="Recuperar Contraseña"
+      subtitle="Ingresa tu correo para generar tu enlace de restablecimiento"
       footer={
-        <Link to="/login" className="text-primary font-medium hover:underline">
-          <ArrowLeft className="w-3 h-3 inline mr-1" />Back to log in
+        <Link to="/login" className="inline-flex items-center text-sm font-semibold text-primary hover:underline gap-1.5">
+          <ArrowLeft className="w-4 h-4" /> Volver al Login
         </Link>
       }
     >
-      {sent ? (
-        <p className="text-sm text-foreground text-center">
-          If an account exists with that email, you'll receive a password reset link shortly.
-        </p>
+      {error && (
+        <div className="mb-4 p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
+          {error}
+        </div>
+      )}
+
+      {success ? (
+        <div className="space-y-4 p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-300">
+          <div className="flex items-center gap-2 font-bold text-sm">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+            <span>Enlace de Recuperación Listo</span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Se ha generado un token seguro para restablecer tu cuenta. Haz clic en el botón a continuación para crear tu nueva contraseña:
+          </p>
+          <Button
+            className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl"
+            onClick={() => navigate(success.resetUrl)}
+          >
+            Restablecer Mi Contraseña Ahora
+          </Button>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email address</Label>
+            <Label htmlFor="email" className="text-xs font-semibold">Correo Registrado</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
-                autoComplete="email"
-                autoFocus
-                placeholder="you@example.com"
+                placeholder="tu.correo@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12"
+                className="pl-10 h-12 rounded-xl text-sm"
                 required
               />
             </div>
           </div>
-          <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+
+          <Button
+            type="submit"
+            className="w-full h-12 font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-blue-500/20"
+            disabled={loading}
+          >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
+                Generando token...
               </>
             ) : (
-              "Send reset link"
+              'Generar Enlace de Recuperación'
             )}
           </Button>
         </form>

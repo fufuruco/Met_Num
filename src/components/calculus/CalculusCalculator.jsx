@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Keyboard, Play, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -174,10 +173,18 @@ export default function CalculusCalculator({ topicId }) {
     setLoading(true);
     const prompt = cfg.buildPrompt(values);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({ prompt });
-      setResult(res);
+      const response = await fetch('/api/solve-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!response.ok) {
+        throw new Error('Error al conectar con la IA');
+      }
+      const data = await response.json();
+      setResult(data.result);
     } catch (e) {
-      setError('Error de conexión o validación.');
+      setError('Error al procesar el cálculo con IA. Revisa tu conexión.');
     } finally {
       setLoading(false);
     }
