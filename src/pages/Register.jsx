@@ -26,7 +26,7 @@ export default function Register() {
         throw new Error('La contraseña debe tener al menos 6 caracteres.');
       }
       await register(name, email, password);
-      window.location.href = '/';
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Error al crear la cuenta.');
     } finally {

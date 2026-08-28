@@ -72,11 +72,19 @@ export const AuthProvider = ({ children }) => {
     authClient.logout();
     setUser(null);
     localStorage.removeItem('auth_user_cache');
-    window.location.href = '/login';
+    if (window.location.hostname.includes('github.io')) {
+      window.location.hash = '#/login';
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   const navigateToLogin = () => {
-    window.location.href = '/login';
+    if (window.location.hostname.includes('github.io')) {
+      window.location.hash = '#/login';
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   const useCredit = async () => {

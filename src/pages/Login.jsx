@@ -21,7 +21,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      window.location.href = '/';
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Correo o contraseña incorrectos.');
     } finally {
@@ -31,7 +31,7 @@ export default function Login() {
 
   const handleGuest = () => {
     loginAsGuest();
-    window.location.href = '/';
+    navigate('/');
   };
 
   return (
