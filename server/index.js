@@ -38,8 +38,17 @@ function loadDB() {
     if (!fs.existsSync(DB_FILE)) {
       db = { users: [], works: [], resetTokens: [], promoCodes: [] };
     } else {
-      const raw = fs.readFileSync(DB_FILE, 'utf-8');
-      db = JSON.parse(raw);
+      const raw = fs.readFileSync(DB_FILE, 'utf-8').trim();
+      if (!raw || raw.length === 0) {
+        db = { users: [], works: [], resetTokens: [], promoCodes: [] };
+      } else {
+        try {
+          db = JSON.parse(raw);
+        } catch (parseErr) {
+          console.error('⚠️  database.json corrupted, reiniciando base de datos limpia:', parseErr.message);
+          db = { users: [], works: [], resetTokens: [], promoCodes: [] };
+        }
+      }
     }
 
     if (!db.promoCodes) db.promoCodes = [];

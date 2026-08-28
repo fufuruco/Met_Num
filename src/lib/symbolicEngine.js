@@ -19,6 +19,8 @@ async function solveWithAI(expression, operation, context = {}) {
       body: JSON.stringify({ expression, operation, context }),
     });
     if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return null;
     const data = await res.json();
     if (data.steps && data.steps.length > 0) {
       return data;

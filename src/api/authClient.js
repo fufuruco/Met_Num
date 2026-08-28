@@ -1,5 +1,31 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+async function parseApiResponse(res, defaultErrorMsg = 'Error en la solicitud') {
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || data.message || defaultErrorMsg);
+      }
+      return data;
+    } catch (e) {
+      if (e.message && e.message !== 'Unexpected end of JSON input') {
+        throw e;
+      }
+    }
+  }
+  
+  if (!res.ok) {
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+      throw new Error('El servidor se está iniciando en la nube. Por favor espera 15 segundos y reintenta.');
+    }
+    throw new Error(`Error del servidor (${res.status}). Por favor reintenta.`);
+  }
+
+  return {};
+}
+
 export const authClient = {
   getToken() {
     return localStorage.getItem('auth_token') || localStorage.getItem('token');
@@ -21,10 +47,7 @@ export const authClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Error al registrar usuario');
-    }
+    const data = await parseApiResponse(res, 'Error al registrar usuario');
     if (data.token) {
       this.setToken(data.token);
     }
@@ -37,10 +60,7 @@ export const authClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Error al iniciar sesión');
-    }
+    const data = await parseApiResponse(res, 'Error al iniciar sesión');
     if (data.token) {
       this.setToken(data.token);
     }
@@ -113,10 +133,7 @@ export const authClient = {
       body: JSON.stringify({ code }),
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Error al canjear código');
-    }
+    const data = await parseApiResponse(res, 'Error al canjear código');
     if (data.token) {
       this.setToken(data.token);
     }
@@ -145,11 +162,7 @@ export const authClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Error al solicitar recuperación');
-    }
-    return data;
+    return await parseApiResponse(res, 'Error al solicitar recuperación');
   },
 
   async resetPassword(token, newPassword) {
@@ -158,11 +171,7 @@ export const authClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, newPassword }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Error al restablecer contraseña');
-    }
-    return data;
+    return await parseApiResponse(res, 'Error al restablecer contraseña');
   },
 
   logout() {
@@ -236,9 +245,7 @@ export const authClient = {
     const res = await fetch(`${API_URL}/admin/codes`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    return data;
+    return await parseApiResponse(res, 'Error al obtener códigos');
   },
 
   async createPromoCode(payload) {
@@ -251,9 +258,7 @@ export const authClient = {
       },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    return data;
+    return await parseApiResponse(res, 'Error al crear código');
   },
 
   async deletePromoCode(code) {
@@ -262,8 +267,6 @@ export const authClient = {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    return data;
+    return await parseApiResponse(res, 'Error al eliminar código');
   }
 };
