@@ -172,8 +172,10 @@ export default function CalculusCalculator({ topicId }) {
     setResult(null);
     setLoading(true);
     const prompt = cfg.buildPrompt(values);
+    const isGhPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+    const API_URL = import.meta.env.VITE_API_URL || (isGhPages ? 'https://met-num.onrender.com/api' : '/api');
     try {
-      const response = await fetch('/api/solve-prompt', {
+      const response = await fetch(`${API_URL}/solve-prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),

@@ -6,7 +6,8 @@ import { all, create } from 'mathjs';
 
 const math = create(all);
 
-const API_URL = '/api';
+const isGhPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+const API_URL = import.meta.env.VITE_API_URL || (isGhPages ? 'https://met-num.onrender.com/api' : '/api');
 
 /**
  * Intenta resolver con IA (Gemini) primero. Si falla, devuelve null para usar el motor local.

@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const isGhPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+const API_URL = import.meta.env.VITE_API_URL || (isGhPages ? 'https://met-num.onrender.com/api' : '/api');
 
 async function parseApiResponse(res, defaultErrorMsg = 'Error en la solicitud') {
   const contentType = res.headers.get('content-type') || '';
