@@ -1,6 +1,6 @@
 # 🧮 NumLab Engine — Laboratorio Virtual de Métodos Numéricos
 
-Aplicación web interactiva para resolver problemas de **Métodos Numéricos**, **Cálculo** y **Estadística Descriptiva**, construida con React + Vite y desplegada en Base44 y GitHub Pages.
+Aplicación web interactiva para resolver problemas de **Métodos Numéricos**, **Cálculo** y **Estadística Descriptiva**, construida con React + Vite y desplegada en GitHub Pages.
 
 ---
 
@@ -10,11 +10,6 @@ Antes de empezar, asegúrate de tener instalado en tu computadora:
 
 1. **Node.js** (versión 18 o superior): [https://nodejs.org](https://nodejs.org)
 2. **Git**: [https://git-scm.com](https://git-scm.com)
-3. **Base44 CLI** (opcional, solo si usas el backend de Base44):
-   ```bash
-   npm install -g base44@latest
-   ```
-
 ---
 
 ## 🚀 Arranque Local (Ver la app en tu PC)
@@ -91,23 +86,6 @@ Este comando automáticamente:
 
 ---
 
-### Opción B: Publicar en Base44
-
-Tu aplicación en Base44 está en:
-**https://solve-num-lab.base44.app**
-
-Para actualizarla:
-
-1. **Compila el proyecto:**
-   ```bash
-   npm run build
-   ```
-
-2. **Sube los archivos a Base44:**
-   ```bash
-   npx base44 deploy
-   ```
-
 ---
 
 ## 📋 Resumen Rápido de Comandos
@@ -119,7 +97,7 @@ Para actualizarla:
 | Compilar para producción            | `npm run build`                            |
 | Guardar cambios en Git              | `git add .` → `git commit -m "msg"` → `git push origin main` |
 | Publicar en GitHub Pages            | `npm run deploy:gh`                        |
-| Publicar en Base44                  | `npm run build` → `npx base44 deploy`     |
+
 
 ---
 
@@ -132,7 +110,7 @@ D:\Otras\Mate\
 │   ├── components/             ← Componentes reutilizables (Sidebar, Tabs, etc.)
 │   ├── lib/                    ← Lógica de cálculo (statisticsMethods.js, etc.)
 │   └── App.jsx                 ← Enrutador principal
-├── base44/                     ← Configuración de Base44
+
 ├── dist/                       ← Archivos compilados (se genera con npm run build)
 ├── package.json                ← Dependencias y scripts
 ├── vite.config.js              ← Configuración de Vite
@@ -149,5 +127,5 @@ D:\Otras\Mate\
 - **Recharts** — Gráficos interactivos (histogramas, regresión)
 - **KaTeX** — Renderizado de fórmulas matemáticas
 - **math.js** — Motor de evaluación de expresiones matemáticas
-- **Base44** — Backend y hosting
+
 - **GitHub Pages** — Hosting alternativo gratuito

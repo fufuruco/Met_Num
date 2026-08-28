@@ -53,30 +53,43 @@ function loadDB() {
 
     if (!db.promoCodes) db.promoCodes = [];
 
-    // Initialize Admin User
-    const adminEmail = 'JPereira';
-    const adminExists = db.users.find(u => u.email === adminEmail);
-    if (!adminExists) {
-      // Sync bcrypt hash since this is startup
-      const hashedPassword = bcrypt.hashSync('Lulo2026', 10);
-      db.users.push({
-        id: 'usr_admin_' + Date.now(),
-        name: 'Administrador JP',
-        email: adminEmail,
-        password: hashedPassword,
-        role: 'admin',
-        dailyCredits: 9999,
-        lastCreditDate: new Date().toISOString().split('T')[0],
-        createdAt: new Date().toISOString(),
-        premiumUntil: Date.now() + 1000 * 60 * 60 * 24 * 365 * 100 // 100 years premium
-      });
+    // Permanent Seed Accounts (Always preserved across deployments)
+    const permanentAccounts = [
+      { email: 'JPereira', name: 'Administrador JP', role: 'admin', passwordPlain: 'Lulo2026' },
+      { email: 'fufuruco@gmail.com', name: 'Ing. Jorge Pereira', role: 'admin', passwordPlain: 'Lulo2026' },
+      { email: 'fufu.ruco@gmail.com', name: 'Ing. Jorge Pereira', role: 'admin', passwordPlain: 'Lulo2026' },
+      { email: 'mierdil2019@gmail.com', name: 'Ing. fufu', role: 'premium', passwordPlain: 'Lulo2026' }
+    ];
+
+    let dbChanged = false;
+    for (const acc of permanentAccounts) {
+      const existing = db.users.find(u => u.email.toLowerCase().trim() === acc.email.toLowerCase().trim());
+      if (!existing) {
+        const hashedPassword = bcrypt.hashSync(acc.passwordPlain, 10);
+        db.users.push({
+          id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+          name: acc.name,
+          email: acc.email,
+          password: hashedPassword,
+          role: acc.role,
+          dailyCredits: 9999,
+          lastCreditDate: new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString(),
+          premiumUntil: Date.now() + 1000 * 60 * 60 * 24 * 365 * 100 // 100 years
+        });
+        dbChanged = true;
+      } else {
+        // Ensure role and premium status remain elevated
+        if (existing.role !== acc.role) {
+          existing.role = acc.role;
+          existing.dailyCredits = 9999;
+          dbChanged = true;
+        }
+      }
+    }
+
+    if (dbChanged) {
       fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-    } else if (db.users.length > 0 && adminExists) {
-       // ensure admin always has admin role
-       if(adminExists.role !== 'admin') {
-           adminExists.role = 'admin';
-           fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-       }
     }
 
     return db;

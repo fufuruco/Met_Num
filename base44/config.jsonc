@@ -1,8 +1,0 @@
-{
-  "name": "num-lab-engine",
-  "entitiesDir": "./entities",
-  "site": {
-    "outputDirectory": "./dist",
-    "serveCommand": "npm run dev"
-  }
-}
