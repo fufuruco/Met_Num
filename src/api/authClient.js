@@ -269,5 +269,51 @@ export const authClient = {
       headers: { Authorization: `Bearer ${token}` },
     });
     return await parseApiResponse(res, 'Error al eliminar código');
+  },
+
+  // -------------------------------------------------------------
+  // ADMIN USER MANAGEMENT
+  // -------------------------------------------------------------
+  async getUsers() {
+    const token = this.getToken();
+    const res = await fetch(`${API_URL}/admin/users`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await parseApiResponse(res, 'Error al obtener usuarios');
+  },
+
+  async createUser(payload) {
+    const token = this.getToken();
+    const res = await fetch(`${API_URL}/admin/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return await parseApiResponse(res, 'Error al crear usuario');
+  },
+
+  async updateUser(id, payload) {
+    const token = this.getToken();
+    const res = await fetch(`${API_URL}/admin/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return await parseApiResponse(res, 'Error al actualizar usuario');
+  },
+
+  async deleteUser(id) {
+    const token = this.getToken();
+    const res = await fetch(`${API_URL}/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await parseApiResponse(res, 'Error al eliminar usuario');
   }
 };

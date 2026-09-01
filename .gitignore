@@ -32,3 +32,6 @@ dist-ssr
 
 # Database (generated at runtime, must NOT be committed)
 server/data/database.json
+server/data/*.bak
+server/data/*.tmp
+server/data/*.corrupted.*

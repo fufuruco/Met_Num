@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 // Database initialization (File-based persistent JSON database)
-const DB_DIR = path.join(__dirname, 'data');
+const DB_DIR = process.env.DB_DIR ? path.resolve(process.env.DB_DIR) : path.join(__dirname, 'data');
 const DB_FILE = path.join(DB_DIR, 'database.json');
 
 if (!fs.existsSync(DB_DIR)) {
@@ -35,7 +35,8 @@ if (!fs.existsSync(DB_DIR)) {
 function loadDB() {
   try {
     let db;
-    if (!fs.existsSync(DB_FILE)) {
+    const isNewDatabase = !fs.existsSync(DB_FILE);
+    if (isNewDatabase) {
       db = { users: [], works: [], resetTokens: [], promoCodes: [] };
     } else {
       const raw = fs.readFileSync(DB_FILE, 'utf-8').trim();
@@ -44,8 +45,16 @@ function loadDB() {
       } else {
         try {
           db = JSON.parse(raw);
+          // Backup on successful load
+          try {
+            fs.writeFileSync(DB_FILE + '.bak', raw);
+          } catch(e) {}
         } catch (parseErr) {
-          console.error('⚠️  database.json corrupted, reiniciando base de datos limpia:', parseErr.message);
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          console.error(`⚠️  database.json corrupted, guardando backup en database.json.corrupted.${timestamp}`);
+          try {
+            fs.writeFileSync(DB_FILE + '.corrupted.' + timestamp, raw);
+          } catch(e) {}
           db = { users: [], works: [], resetTokens: [], promoCodes: [] };
         }
       }
@@ -53,7 +62,7 @@ function loadDB() {
 
     if (!db.promoCodes) db.promoCodes = [];
 
-    // Permanent Seed Accounts (Always preserved across deployments)
+    // Seed initial accounts only when the database is created.
     const permanentAccounts = [
       { email: 'JPereira', name: 'Administrador JP', role: 'admin', passwordPlain: 'Lulo2026' },
       { email: 'fufuruco@gmail.com', name: 'Ing. Jorge Pereira', role: 'admin', passwordPlain: 'Lulo2026' },
@@ -61,10 +70,8 @@ function loadDB() {
       { email: 'mierdil2019@gmail.com', name: 'Ing. fufu', role: 'premium', passwordPlain: 'Lulo2026' }
     ];
 
-    let dbChanged = false;
-    for (const acc of permanentAccounts) {
-      const existing = db.users.find(u => u.email.toLowerCase().trim() === acc.email.toLowerCase().trim());
-      if (!existing) {
+    if (isNewDatabase) {
+      for (const acc of permanentAccounts) {
         const hashedPassword = bcrypt.hashSync(acc.passwordPlain, 10);
         db.users.push({
           id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -77,19 +84,27 @@ function loadDB() {
           createdAt: new Date().toISOString(),
           premiumUntil: Date.now() + 1000 * 60 * 60 * 24 * 365 * 100 // 100 years
         });
-        dbChanged = true;
-      } else {
-        // Ensure role and premium status remain elevated
-        if (existing.role !== acc.role) {
-          existing.role = acc.role;
-          existing.dailyCredits = 9999;
-          dbChanged = true;
-        }
+      }
+
+      if (db.users.length > 0) {
+        saveDB(db);
       }
     }
 
-    if (dbChanged) {
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    if (!Array.isArray(db.users)) {
+      db.users = [];
+    }
+
+    if (!Array.isArray(db.works)) {
+      db.works = [];
+    }
+
+    if (!Array.isArray(db.resetTokens)) {
+      db.resetTokens = [];
+    }
+
+    if (!Array.isArray(db.promoCodes)) {
+      db.promoCodes = [];
     }
 
     return db;
@@ -101,9 +116,13 @@ function loadDB() {
 
 function saveDB(data) {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    const tempFile = DB_FILE + '.tmp';
+    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
+    fs.renameSync(tempFile, DB_FILE);
+    return true;
   } catch (e) {
     console.error('Error saving database:', e);
+    return false;
   }
 }
 
@@ -158,7 +177,9 @@ app.post('/api/auth/register', async (req, res) => {
     };
 
     db.users.push(newUser);
-    saveDB(db);
+    if (!saveDB(db)) {
+      return res.status(503).json({ error: 'No se pudo guardar el usuario. Inténtalo de nuevo.' });
+    }
 
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role },
@@ -505,6 +526,97 @@ app.delete('/api/admin/codes/:code', authenticateToken, requireAdmin, (req, res)
     res.json({ message: 'Código eliminado' });
   } catch (err) {
     res.status(500).json({ error: 'Error al eliminar código' });
+  }
+});
+
+// -------------------------------------------------------------
+// ADMIN USER ENDPOINTS
+// -------------------------------------------------------------
+
+app.get('/api/admin/users', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    const db = loadDB();
+    const safeUsers = (db.users || []).map(u => ({ ...u, password: '' })); // No devolver pass
+    res.json(safeUsers);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+});
+
+app.post('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { name, email, password, role, dailyCredits, premiumUntil } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email y contraseña requeridos' });
+    
+    const db = loadDB();
+    if (db.users.find(u => u.email.toLowerCase() === email.toLowerCase().trim())) {
+      return res.status(400).json({ error: 'Email ya registrado' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      name: name || email.split('@')[0],
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      role: role || 'free',
+      dailyCredits: parseInt(dailyCredits) || (role === 'admin' || role === 'premium' ? 999 : 5),
+      lastCreditDate: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+      premiumUntil: premiumUntil ? parseInt(premiumUntil) : null
+    };
+
+    db.users.push(newUser);
+    saveDB(db);
+    res.status(201).json({ ...newUser, password: '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al crear usuario' });
+  }
+});
+
+app.put('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role, dailyCredits, premiumUntil, password } = req.body;
+    
+    const db = loadDB();
+    const user = db.users.find(u => u.id === id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email.toLowerCase().trim();
+    if (role !== undefined) user.role = role;
+    if (dailyCredits !== undefined) user.dailyCredits = parseInt(dailyCredits);
+    if (premiumUntil !== undefined) user.premiumUntil = premiumUntil ? parseInt(premiumUntil) : null;
+    
+    if (password) {
+       user.password = await bcrypt.hash(password, 10);
+    }
+
+    saveDB(db);
+    res.json({ ...user, password: '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar usuario' });
+  }
+});
+
+app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = loadDB();
+    const initialLen = db.users.length;
+    db.users = db.users.filter(u => u.id !== id);
+    
+    if (db.users.length === initialLen) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    if (!saveDB(db)) {
+      return res.status(503).json({ error: 'No se pudo eliminar el usuario. Inténtalo de nuevo.' });
+    }
+    res.json({ message: 'Usuario eliminado' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar usuario' });
   }
 });
 
