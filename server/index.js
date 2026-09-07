@@ -116,9 +116,18 @@ function loadDB() {
 
 function saveDB(data) {
   try {
+    const jsonStr = JSON.stringify(data, null, 2);
     const tempFile = DB_FILE + '.tmp';
-    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
-    fs.renameSync(tempFile, DB_FILE);
+    try {
+      fs.writeFileSync(tempFile, jsonStr, 'utf-8');
+      fs.renameSync(tempFile, DB_FILE);
+    } catch (renameErr) {
+      // Fallback directo si renameSync falla (común en Windows por locks de archivo)
+      fs.writeFileSync(DB_FILE, jsonStr, 'utf-8');
+      try {
+        if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+      } catch (_) {}
+    }
     return true;
   } catch (e) {
     console.error('Error saving database:', e);
@@ -576,11 +585,15 @@ app.post('/api/admin/users', authenticateToken, requireAdmin, async (req, res) =
 
 app.put('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const targetId = String(rawId || '').trim();
     const { name, email, role, dailyCredits, premiumUntil, password } = req.body;
     
     const db = loadDB();
-    const user = db.users.find(u => u.id === id);
+    const user = (db.users || []).find(u => 
+      String(u.id || u._id || '').trim() === targetId || 
+      String(u.email || '').toLowerCase().trim() === targetId.toLowerCase()
+    );
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     if (name !== undefined) user.name = name;
@@ -593,30 +606,58 @@ app.put('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, res
        user.password = await bcrypt.hash(password, 10);
     }
 
-    saveDB(db);
+    if (!saveDB(db)) {
+      return res.status(500).json({ error: 'No se pudo guardar la actualización en la base de datos' });
+    }
     res.json({ ...user, password: '' });
   } catch (err) {
+    console.error('Error al actualizar usuario:', err);
     res.status(500).json({ error: 'Error al actualizar usuario' });
   }
 });
 
 app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, (req, res) => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const targetId = String(rawId || '').trim();
+    if (!targetId) {
+      return res.status(400).json({ error: 'ID de usuario no proporcionado' });
+    }
+
     const db = loadDB();
-    const initialLen = db.users.length;
-    db.users = db.users.filter(u => u.id !== id);
-    
-    if (db.users.length === initialLen) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+    const userIndex = (db.users || []).findIndex(u => {
+      const uId = String(u.id || u._id || '').trim();
+      const uEmail = String(u.email || '').toLowerCase().trim();
+      return uId === targetId || uEmail === targetId.toLowerCase();
+    });
+
+    if (userIndex === -1) {
+      // Si el usuario ya no existe en la BD, respondemos con éxito para que el frontend lo remueva sin error
+      return res.json({ message: 'Usuario no encontrado (ya estaba eliminado de la base de datos)', alreadyDeleted: true });
     }
-    
+
+    const userToDelete = db.users[userIndex];
+
+    // Impedir que el administrador elimine su propia cuenta en sesión
+    if (String(userToDelete.id) === String(req.user.id) || String(userToDelete.email).toLowerCase() === String(req.user.email).toLowerCase()) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta de administrador en sesión actual.' });
+    }
+
+    // Eliminar de la lista de usuarios
+    db.users.splice(userIndex, 1);
+
+    // Limpiar trabajos asociados a este usuario
+    if (Array.isArray(db.works)) {
+      db.works = db.works.filter(w => String(w.userId) !== String(userToDelete.id));
+    }
+
     if (!saveDB(db)) {
-      return res.status(503).json({ error: 'No se pudo eliminar el usuario. Inténtalo de nuevo.' });
+      return res.status(500).json({ error: 'No se pudo eliminar el usuario de la base de datos.' });
     }
-    res.json({ message: 'Usuario eliminado' });
+    res.json({ message: 'Usuario eliminado correctamente', deletedId: userToDelete.id });
   } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar usuario' });
+    console.error('Error al eliminar usuario:', err);
+    res.status(500).json({ error: 'Error interno al eliminar usuario' });
   }
 });
 

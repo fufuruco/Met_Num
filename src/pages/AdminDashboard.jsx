@@ -83,11 +83,13 @@ export default function AdminDashboard() {
   const handleDeleteCode = async (codeStr) => {
     if (!confirm(`¿Eliminar código ${codeStr}?`)) return;
     try {
+      setCodes(prev => prev.filter(c => c.code !== codeStr));
       await authClient.deletePromoCode(codeStr);
       setSuccess('Código eliminado');
-      fetchCodes();
     } catch (e) {
-      alert(e.message);
+      setError(e.message);
+    } finally {
+      fetchCodes();
     }
   };
 
@@ -137,23 +139,33 @@ export default function AdminDashboard() {
       if (editingUser.role === 'premium') {
         payload.premiumUntil = editingUser.premiumUntil || (Date.now() + 30 * 24 * 60 * 60 * 1000);
       }
-      await authClient.updateUser(editingUser.id, payload);
+      const targetId = editingUser.id || editingUser.email;
+      await authClient.updateUser(targetId, payload);
       setEditingUser(null);
       setSuccess('Usuario actualizado');
-      fetchUsers();
     } catch (e) {
       setError(e.message);
+    } finally {
+      fetchUsers();
     }
   };
 
   const handleDeleteUser = async (u) => {
-    if (!confirm(`¿Eliminar al usuario "${u.name}" (${u.email})? Esta acción no se puede deshacer.`)) return;
+    const userLabel = u.name ? `"${u.name}" (${u.email})` : u.email;
+    if (!confirm(`¿Eliminar al usuario ${userLabel}? Esta acción no se puede deshacer.`)) return;
     try {
-      await authClient.deleteUser(u.id);
-      setSuccess('Usuario eliminado');
-      fetchUsers();
+      setError(null);
+      // Remoción optimista inmediata de la vista para que nunca se quede visible
+      setUsers(prev => prev.filter(user => user.id !== u.id && user.email !== u.email));
+      
+      const targetId = u.id || u.email;
+      const res = await authClient.deleteUser(targetId);
+      setSuccess(res.message || 'Usuario eliminado exitosamente');
     } catch (e) {
-      setError(e.message);
+      setError(e.message || 'Error al eliminar usuario');
+    } finally {
+      // Siempre sincronizar con la base de datos del servidor
+      fetchUsers();
     }
   };
 

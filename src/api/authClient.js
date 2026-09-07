@@ -297,7 +297,8 @@ export const authClient = {
 
   async updateUser(id, payload) {
     const token = this.getToken();
-    const res = await fetch(`${API_URL}/admin/users/${id}`, {
+    const encodedId = encodeURIComponent(String(id || '').trim());
+    const res = await fetch(`${API_URL}/admin/users/${encodedId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -310,7 +311,8 @@ export const authClient = {
 
   async deleteUser(id) {
     const token = this.getToken();
-    const res = await fetch(`${API_URL}/admin/users/${id}`, {
+    const encodedId = encodeURIComponent(String(id || '').trim());
+    const res = await fetch(`${API_URL}/admin/users/${encodedId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
