@@ -18,13 +18,16 @@ import {
   Layers,
   Percent,
 } from 'lucide-react';
+import {
+  BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
+} from 'recharts';
 
 const TESTS = [
   { id: 't1', label: 't-Student (1 Muestra)', desc: 'Compara la media de una muestra con un valor de referencia (μ₀)' },
   { id: 't2', label: 't-Student (2 Muestras)', desc: 'Compara si las medias de dos grupos independientes son diferentes' },
   { id: 'anova', label: 'ANOVA (1 Vía)', desc: 'Compara simultáneamente las medias de 3 o más grupos' },
   { id: 'chi2', label: 'Chi-Cuadrado (χ²)', desc: 'Prueba de independencia para tablas de contingencia r × c' },
-  { id: 'dist', label: 'Distribuciones', desc: 'Cálculo de probabilidades y valores críticos (Normal, t, F, χ²)' },
+  { id: 'dist', label: 'Distribuciones', desc: 'Calculadora de probabilidades (Normal, Binomial, Poisson, Hipergeométrica, etc.)' },
 ];
 
 export default function AdvancedStatistics() {
@@ -53,8 +56,9 @@ export default function AdvancedStatistics() {
   // distributions inputs
   const [distType, setDistType] = useState('normal');
   const [distX, setDistX] = useState('1.96');
-  const [distParam1, setDistParam1] = useState('0'); // mean or df
-  const [distParam2, setDistParam2] = useState('1'); // std or df2
+  const [distParam1, setDistParam1] = useState('0'); // mean / n / lambda / N / df
+  const [distParam2, setDistParam2] = useState('1'); // std / p / K / df2
+  const [distParam3, setDistParam3] = useState('10'); // n (sample size for hypergeometric)
 
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -96,10 +100,22 @@ export default function AdvancedStatistics() {
         const a = parseFloat(chi2Alpha) || 0.05;
         setResult(chiSquareIndependence(rows, a));
       } else if (activeTest === 'dist') {
-        const xVal = parseFloat(distX) || 0;
+        const xVal = parseFloat(distX) ?? 0;
         let params = {};
         if (distType === 'normal') {
           params = { mean: parseFloat(distParam1) || 0, std: parseFloat(distParam2) || 1 };
+        } else if (distType === 'binomial') {
+          params = { n: parseInt(distParam1) || 10, p: parseFloat(distParam2) ?? 0.5 };
+        } else if (distType === 'poisson') {
+          params = { lambda: parseFloat(distParam1) || 3 };
+        } else if (distType === 'hypergeometric') {
+          params = {
+            N: parseInt(distParam1) || 50,
+            K: parseInt(distParam2) || 10,
+            n: parseInt(distParam3) || 10,
+          };
+        } else if (distType === 'exponential') {
+          params = { rate: parseFloat(distParam1) || 1 };
         } else if (distType === 't' || distType === 'chisquare') {
           params = { df: parseFloat(distParam1) || 10 };
         } else if (distType === 'f') {
@@ -313,31 +329,46 @@ export default function AdvancedStatistics() {
         {/* Test 5: Distributions */}
         {activeTest === 'dist' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground block mb-1">Distribución:</label>
                 <select
                   value={distType}
-                  onChange={(e) => setDistType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                  onChange={(e) => {
+                    const type = e.target.value;
+                    setDistType(type);
+                    if (type === 'normal') {
+                      setDistParam1('0'); setDistParam2('1'); setDistX('1.96');
+                    } else if (type === 'binomial') {
+                      setDistParam1('10'); setDistParam2('0.5'); setDistX('5');
+                    } else if (type === 'poisson') {
+                      setDistParam1('3'); setDistX('2');
+                    } else if (type === 'hypergeometric') {
+                      setDistParam1('50'); setDistParam2('10'); setDistParam3('10'); setDistX('3');
+                    } else if (type === 'exponential') {
+                      setDistParam1('0.5'); setDistX('2');
+                    } else if (type === 't') {
+                      setDistParam1('10'); setDistX('2.228');
+                    } else if (type === 'chisquare') {
+                      setDistParam1('5'); setDistX('11.07');
+                    } else if (type === 'f') {
+                      setDistParam1('5'); setDistParam2('10'); setDistX('3.33');
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs focus:ring-1 focus:ring-emerald-500"
                 >
                   <option value="normal">Normal (μ, σ)</option>
+                  <option value="binomial">Binomial B(n, p)</option>
+                  <option value="poisson">Poisson P(λ)</option>
+                  <option value="hypergeometric">Hipergeométrica H(N, K, n)</option>
+                  <option value="exponential">Exponencial Exp(λ)</option>
                   <option value="t">t de Student (gl)</option>
                   <option value="chisquare">Chi-Cuadrado (gl)</option>
                   <option value="f">F de Snedecor (gl1, gl2)</option>
                 </select>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">Valor de x:</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={distX}
-                  onChange={(e) => setDistX(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
-                />
-              </div>
-              {distType === 'normal' ? (
+
+              {distType === 'normal' && (
                 <>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground block mb-1">Media (μ):</label>
@@ -348,17 +379,222 @@ export default function AdvancedStatistics() {
                       className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
                     />
                   </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Desviación Estándar (σ):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={distParam2}
+                      onChange={(e) => setDistParam2(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Valor evaluado (x):</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
                 </>
-              ) : (
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Grados Libertad (gl):</label>
-                  <input
-                    type="number"
-                    value={distParam1}
-                    onChange={(e) => setDistParam1(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
-                  />
-                </div>
+              )}
+
+              {distType === 'binomial' && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Número de ensayos (n):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={distParam1}
+                      onChange={(e) => setDistParam1(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Probabilidad de éxito (p):</label>
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="0"
+                      max="1"
+                      value={distParam2}
+                      onChange={(e) => setDistParam2(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Éxitos deseados (k):</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
+              {distType === 'poisson' && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Tasa promedio (λ):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.01"
+                      value={distParam1}
+                      onChange={(e) => setDistParam1(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Ocurrencias (k):</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
+              {distType === 'hypergeometric' && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Población total (N):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={distParam1}
+                      onChange={(e) => setDistParam1(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Éxitos en población (K):</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={distParam2}
+                      onChange={(e) => setDistParam2(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Tamaño de muestra (n):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={distParam3}
+                      onChange={(e) => setDistParam3(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Éxitos en muestra (k):</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
+              {distType === 'exponential' && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Tasa (λ):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.01"
+                      value={distParam1}
+                      onChange={(e) => setDistParam1(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Valor evaluado (x):</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
+              {(distType === 't' || distType === 'chisquare') && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Grados de Libertad (gl):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={distParam1}
+                      onChange={(e) => setDistParam1(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Valor evaluado (x):</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
+
+              {distType === 'f' && (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Grados Libertad 1 (gl₁):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={distParam1}
+                      onChange={(e) => setDistParam1(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Grados Libertad 2 (gl₂):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={distParam2}
+                      onChange={(e) => setDistParam2(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">Valor evaluado (x):</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={distX}
+                      onChange={(e) => setDistX(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-muted/30 font-mono text-xs"
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -510,30 +746,157 @@ export default function AdvancedStatistics() {
             )}
 
             {/* Probability Distribution Output */}
-            {activeTest === 'dist' && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-                <div className="p-4 bg-muted/30 rounded-2xl border border-border">
-                  <span className="text-muted-foreground text-[10px] uppercase font-bold block mb-1">
-                    Densidad f(x):
-                  </span>
-                  <span className="text-lg font-bold text-foreground">{result.pdf.toFixed(6)}</span>
+            {activeTest === 'dist' && result && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+                  <div className="p-4 bg-muted/30 rounded-2xl border border-border">
+                    <span className="text-muted-foreground text-[10px] uppercase font-bold block mb-1">
+                      {result.isDiscrete ? `P(X = ${result.x}):` : `Densidad f(${result.x}):`}
+                    </span>
+                    <span className="text-xl font-bold text-foreground">{result.pdf.toFixed(6)}</span>
+                    <span className="text-[10px] text-muted-foreground block mt-0.5">
+                      {(result.pdf * 100).toFixed(4)}%
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                    <span className="text-emerald-600 dark:text-emerald-400 text-[10px] uppercase font-bold block mb-1">
+                      P(X ≤ {result.x}):
+                    </span>
+                    <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {(result.pLessThanX * 100).toFixed(4)}%
+                    </span>
+                    <span className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 block mt-0.5">
+                      Acumulada = {result.pLessThanX.toFixed(6)}
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-muted/30 rounded-2xl border border-border">
+                    <span className="text-muted-foreground text-[10px] uppercase font-bold block mb-1">
+                      P(X &gt; {result.x}):
+                    </span>
+                    <span className="text-xl font-bold text-foreground">
+                      {(result.pGreaterThanX * 100).toFixed(4)}%
+                    </span>
+                    <span className="text-[10px] text-muted-foreground block mt-0.5">
+                      Complementario = {result.pGreaterThanX.toFixed(6)}
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
+                    <span className="text-indigo-600 dark:text-indigo-400 text-[10px] uppercase font-bold block mb-1">
+                      Esperanza E[X] (Media):
+                    </span>
+                    <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                      {typeof result.mean === 'number' ? result.mean.toFixed(4) : result.mean}
+                    </span>
+                    <span className="text-[10px] text-indigo-600/70 dark:text-indigo-400/70 block mt-0.5">
+                      Var[X] = {typeof result.variance === 'number' ? result.variance.toFixed(4) : result.variance} | σ = {typeof result.std === 'number' ? result.std.toFixed(4) : result.std}
+                    </span>
+                  </div>
                 </div>
-                <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                  <span className="text-emerald-600 dark:text-emerald-400 text-[10px] uppercase font-bold block mb-1">
-                    P(X ≤ {result.x}):
-                  </span>
-                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                    {(result.pLessThanX * 100).toFixed(4)}%
-                  </span>
-                </div>
-                <div className="p-4 bg-muted/30 rounded-2xl border border-border">
-                  <span className="text-muted-foreground text-[10px] uppercase font-bold block mb-1">
-                    P(X &gt; {result.x}):
-                  </span>
-                  <span className="text-lg font-bold text-foreground">
-                    {(result.pGreaterThanX * 100).toFixed(4)}%
-                  </span>
-                </div>
+
+                {result.isDiscrete && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-muted/20 rounded-2xl border border-border text-xs font-mono">
+                    <div>
+                      <span className="text-slate-500 text-[10px] uppercase font-bold">P(X &lt; {result.x}):</span>
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {(result.pStrictlyLessThanX * 100).toFixed(4)}%
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-[10px] uppercase font-bold">P(X ≥ {result.x}):</span>
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {(result.pGreaterOrEqualX * 100).toFixed(4)}%
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-[10px] uppercase font-bold">Desviación Estándar (σ):</span>
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {typeof result.std === 'number' ? result.std.toFixed(4) : result.std}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-[10px] uppercase font-bold">Varianza (σ²):</span>
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {typeof result.variance === 'number' ? result.variance.toFixed(4) : result.variance}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {result.dist === 'normal' && result.zScore !== null && (
+                  <div className="p-4 bg-sky-500/10 rounded-2xl border border-sky-500/20 text-xs font-mono flex items-center justify-between">
+                    <div>
+                      <span className="text-sky-600 dark:text-sky-400 font-bold uppercase text-[10px] block">
+                        Puntaje Z (Z-Score Tipificado):
+                      </span>
+                      <p className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
+                        Z = (x - μ) / σ = ({result.x} - {result.mean}) / {result.std} = <span className="text-sky-600 dark:text-sky-400">{result.zScore.toFixed(4)}</span>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-muted-foreground block">Área normal estándar Z ≤ {result.zScore.toFixed(2)}</span>
+                      <span className="font-bold text-sky-600 dark:text-sky-400">{(result.pLessThanX * 100).toFixed(2)}%</span>
+                    </div>
+                  </div>
+                )}
+
+                {result.chartData && result.chartData.length > 0 && (
+                  <div className="bg-card border border-border p-5 rounded-2xl space-y-3">
+                    <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-500" />
+                      Gráfico Interactivo de la {result.distName}
+                    </h4>
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {result.isDiscrete ? (
+                          <BarChart data={result.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                            <XAxis dataKey="k" tickLine={false} style={{ fontSize: '10px' }} />
+                            <YAxis tickLine={false} style={{ fontSize: '10px' }} />
+                            <Tooltip
+                              formatter={(val) => [`${(val * 100).toFixed(3)}% (P=${val})`, 'Probabilidad']}
+                              labelFormatter={(lbl) => `k = ${lbl}`}
+                            />
+                            <Bar dataKey="prob" radius={[4, 4, 0, 0]}>
+                              {result.chartData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={entry.isSelected ? '#10b981' : entry.isLowerEq ? '#34d399' : '#cbd5e1'}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        ) : (
+                          <AreaChart data={result.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="colorDensity" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.6} />
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                            <XAxis dataKey="x" tickLine={false} style={{ fontSize: '10px' }} />
+                            <YAxis tickLine={false} style={{ fontSize: '10px' }} />
+                            <Tooltip
+                              formatter={(val) => [val.toFixed(5), 'Densidad f(x)']}
+                              labelFormatter={(lbl) => `x = ${lbl}`}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="density"
+                              stroke="#10b981"
+                              strokeWidth={2}
+                              fillOpacity={1}
+                              fill="url(#colorDensity)"
+                            />
+                          </AreaChart>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

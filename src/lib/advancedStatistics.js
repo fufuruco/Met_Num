@@ -217,49 +217,280 @@ export function chiSquareIndependence(observedMatrix = [], alpha = 0.05) {
   };
 }
 
+// Auxiliares para combinación y distribución hipergeométrica
+function combinations(n, k) {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  let cK = k;
+  if (cK > n / 2) cK = n - cK;
+  let res = 1;
+  for (let i = 1; i <= cK; i++) {
+    res = (res * (n - cK + i)) / i;
+  }
+  return res;
+}
+
+function hypergeomPdf(k, N, K, n) {
+  if (k < Math.max(0, n - (N - K)) || k > Math.min(n, K)) return 0;
+  const num = combinations(K, k) * combinations(N - K, n - k);
+  const den = combinations(N, n);
+  return den > 0 ? num / den : 0;
+}
+
+function hypergeomCdf(k, N, K, n) {
+  let sum = 0;
+  const minK = Math.max(0, n - (N - K));
+  const targetK = Math.min(k, Math.min(n, K));
+  for (let i = minK; i <= targetK; i++) {
+    sum += hypergeomPdf(i, N, K, n);
+  }
+  return sum;
+}
+
 /**
- * Calculadora de Distribuciones de Probabilidad
+ * Calculadora Completa de Distribuciones de Probabilidad
  */
 export function calculateDistribution({ dist = 'normal', params = {}, x = 0 }) {
   let cdf = 0;
   let pdf = 0;
+  let isDiscrete = false;
+  let distName = '';
+  let formula = '';
+  let meanVal = 0;
+  let varianceVal = 0;
+  let stdVal = 0;
+  let zScore = null;
+  let pStrictlyLessThanX = 0;
+  let pGreaterOrEqualX = 0;
+  const chartData = [];
+
+  const xNum = Number(x) || 0;
 
   if (dist === 'normal') {
-    const mean = params.mean || 0;
-    const std = params.std || 1;
-    pdf = jStat.normal.pdf(x, mean, std);
-    cdf = jStat.normal.cdf(x, mean, std);
-  } else if (dist === 't') {
-    const df = params.df || 10;
-    pdf = jStat.studentt.pdf(x, df);
-    cdf = jStat.studentt.cdf(x, df);
-  } else if (dist === 'chisquare') {
-    const df = params.df || 5;
-    pdf = jStat.chisquare.pdf(x, df);
-    cdf = jStat.chisquare.cdf(x, df);
-  } else if (dist === 'f') {
-    const df1 = params.df1 || 5;
-    const df2 = params.df2 || 10;
-    pdf = jStat.centralF.pdf(x, df1, df2);
-    cdf = jStat.centralF.cdf(x, df1, df2);
+    distName = 'Distribución Normal (Gaussiana)';
+    const mean = params.mean !== undefined ? Number(params.mean) : 0;
+    const std = params.std ? Math.max(0.00001, Number(params.std)) : 1;
+    meanVal = mean;
+    varianceVal = std * std;
+    stdVal = std;
+    zScore = (xNum - mean) / std;
+
+    pdf = jStat.normal.pdf(xNum, mean, std);
+    cdf = jStat.normal.cdf(xNum, mean, std);
+    pStrictlyLessThanX = cdf;
+    pGreaterOrEqualX = 1 - cdf;
+    formula = 'f(x) = \\frac{1}{\\sigma \\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}';
+
+    const minX = mean - 3.8 * std;
+    const maxX = mean + 3.8 * std;
+    const step = (maxX - minX) / 60;
+    for (let pt = minX; pt <= maxX; pt += step) {
+      const pDensity = jStat.normal.pdf(pt, mean, std);
+      chartData.push({
+        x: Number(pt.toFixed(2)),
+        density: Number(pDensity.toFixed(5)),
+        isLower: pt <= xNum,
+      });
+    }
   } else if (dist === 'binomial') {
-    const n = params.n || 10;
-    const p = params.p || 0.5;
-    const k = Math.floor(x);
+    isDiscrete = true;
+    distName = 'Distribución Binomial B(n, p)';
+    const n = Math.max(1, Math.round(Number(params.n) || 10));
+    const p = Math.min(1, Math.max(0, Number(params.p) ?? 0.5));
+    const k = Math.max(0, Math.min(n, Math.round(xNum)));
+
     pdf = jStat.binomial.pdf(k, n, p);
     cdf = jStat.binomial.cdf(k, n, p);
+    pStrictlyLessThanX = k > 0 ? jStat.binomial.cdf(k - 1, n, p) : 0;
+    pGreaterOrEqualX = 1 - pStrictlyLessThanX;
+
+    meanVal = n * p;
+    varianceVal = n * p * (1 - p);
+    stdVal = Math.sqrt(varianceVal);
+    formula = 'P(X = k) = \\binom{n}{k} p^k (1-p)^{n-k}';
+
+    for (let i = 0; i <= n; i++) {
+      const prob = jStat.binomial.pdf(i, n, p);
+      chartData.push({
+        k: i,
+        prob: Number(prob.toFixed(5)),
+        percentage: Number((prob * 100).toFixed(2)),
+        isSelected: i === k,
+        isLowerEq: i <= k,
+      });
+    }
   } else if (dist === 'poisson') {
-    const lambda = params.lambda || 3;
-    const k = Math.floor(x);
+    isDiscrete = true;
+    distName = 'Distribución de Poisson P(λ)';
+    const lambda = Math.max(0.0001, Number(params.lambda) || 3);
+    const k = Math.max(0, Math.round(xNum));
+
     pdf = jStat.poisson.pdf(k, lambda);
     cdf = jStat.poisson.cdf(k, lambda);
+    pStrictlyLessThanX = k > 0 ? jStat.poisson.cdf(k - 1, lambda) : 0;
+    pGreaterOrEqualX = 1 - pStrictlyLessThanX;
+
+    meanVal = lambda;
+    varianceVal = lambda;
+    stdVal = Math.sqrt(lambda);
+    formula = 'P(X = k) = \\frac{e^{-\\lambda} \\lambda^k}{k!}';
+
+    const maxK = Math.max(15, Math.ceil(lambda + 4 * Math.sqrt(lambda)));
+    for (let i = 0; i <= maxK; i++) {
+      const prob = jStat.poisson.pdf(i, lambda);
+      chartData.push({
+        k: i,
+        prob: Number(prob.toFixed(5)),
+        percentage: Number((prob * 100).toFixed(2)),
+        isSelected: i === k,
+        isLowerEq: i <= k,
+      });
+    }
+  } else if (dist === 'hypergeometric') {
+    isDiscrete = true;
+    distName = 'Distribución Hipergeométrica H(N, K, n)';
+    const N = Math.max(1, Math.round(Number(params.N) || 50));
+    const K = Math.max(0, Math.min(N, Math.round(Number(params.K) || 10)));
+    const n = Math.max(1, Math.min(N, Math.round(Number(params.n) || 10)));
+    const minK = Math.max(0, n - (N - K));
+    const maxK = Math.min(n, K);
+    const k = Math.max(minK, Math.min(maxK, Math.round(xNum)));
+
+    pdf = hypergeomPdf(k, N, K, n);
+    cdf = hypergeomCdf(k, N, K, n);
+    pStrictlyLessThanX = k > minK ? hypergeomCdf(k - 1, N, K, n) : 0;
+    pGreaterOrEqualX = 1 - pStrictlyLessThanX;
+
+    meanVal = n * (K / N);
+    varianceVal = N > 1 ? n * (K / N) * (1 - K / N) * ((N - n) / (N - 1)) : 0;
+    stdVal = Math.sqrt(varianceVal);
+    formula = 'P(X = k) = \\frac{\\binom{K}{k}\\binom{N-K}{n-k}}{\\binom{N}{n}}';
+
+    for (let i = minK; i <= maxK; i++) {
+      const prob = hypergeomPdf(i, N, K, n);
+      chartData.push({
+        k: i,
+        prob: Number(prob.toFixed(5)),
+        percentage: Number((prob * 100).toFixed(2)),
+        isSelected: i === k,
+        isLowerEq: i <= k,
+      });
+    }
+  } else if (dist === 'exponential') {
+    distName = 'Distribución Exponencial Exp(λ)';
+    const rate = Math.max(0.0001, Number(params.rate || params.lambda) || 1);
+    const xValPos = Math.max(0, xNum);
+
+    pdf = jStat.exponential.pdf(xValPos, rate);
+    cdf = jStat.exponential.cdf(xValPos, rate);
+    pStrictlyLessThanX = cdf;
+    pGreaterOrEqualX = 1 - cdf;
+
+    meanVal = 1 / rate;
+    varianceVal = 1 / (rate * rate);
+    stdVal = 1 / rate;
+    formula = 'f(x) = \\lambda e^{-\\lambda x}, \\quad x \\ge 0';
+
+    const maxPlot = Math.max(5, 4 / rate);
+    const step = maxPlot / 50;
+    for (let pt = 0; pt <= maxPlot; pt += step) {
+      const pDensity = jStat.exponential.pdf(pt, rate);
+      chartData.push({
+        x: Number(pt.toFixed(2)),
+        density: Number(pDensity.toFixed(5)),
+        isLower: pt <= xValPos,
+      });
+    }
+  } else if (dist === 't') {
+    distName = 'Distribución t de Student';
+    const df = Math.max(1, Number(params.df) || 10);
+    pdf = jStat.studentt.pdf(xNum, df);
+    cdf = jStat.studentt.cdf(xNum, df);
+    pStrictlyLessThanX = cdf;
+    pGreaterOrEqualX = 1 - cdf;
+
+    meanVal = df > 1 ? 0 : 'Indefinido';
+    varianceVal = df > 2 ? df / (df - 2) : 'Indefinido';
+    stdVal = typeof varianceVal === 'number' ? Math.sqrt(varianceVal) : 'Indefinido';
+    formula = `t_{(df=${df})}`;
+
+    const step = 8 / 60;
+    for (let pt = -4; pt <= 4; pt += step) {
+      const pDensity = jStat.studentt.pdf(pt, df);
+      chartData.push({
+        x: Number(pt.toFixed(2)),
+        density: Number(pDensity.toFixed(5)),
+        isLower: pt <= xNum,
+      });
+    }
+  } else if (dist === 'chisquare') {
+    distName = 'Distribución Chi-Cuadrado (χ²)';
+    const df = Math.max(1, Number(params.df) || 5);
+    const xValPos = Math.max(0, xNum);
+    pdf = jStat.chisquare.pdf(xValPos, df);
+    cdf = jStat.chisquare.cdf(xValPos, df);
+    pStrictlyLessThanX = cdf;
+    pGreaterOrEqualX = 1 - cdf;
+
+    meanVal = df;
+    varianceVal = 2 * df;
+    stdVal = Math.sqrt(2 * df);
+    formula = `\\chi^2_{(df=${df})}`;
+
+    const maxPlot = Math.max(10, df + 4 * Math.sqrt(2 * df));
+    const step = maxPlot / 50;
+    for (let pt = 0; pt <= maxPlot; pt += step) {
+      const pDensity = jStat.chisquare.pdf(pt, df);
+      chartData.push({
+        x: Number(pt.toFixed(2)),
+        density: Number(pDensity.toFixed(5)),
+        isLower: pt <= xValPos,
+      });
+    }
+  } else if (dist === 'f') {
+    distName = 'Distribución F de Snedecor';
+    const df1 = Math.max(1, Number(params.df1) || 5);
+    const df2 = Math.max(1, Number(params.df2) || 10);
+    const xValPos = Math.max(0, xNum);
+    pdf = jStat.centralF.pdf(xValPos, df1, df2);
+    cdf = jStat.centralF.cdf(xValPos, df1, df2);
+    pStrictlyLessThanX = cdf;
+    pGreaterOrEqualX = 1 - cdf;
+
+    meanVal = df2 > 2 ? df2 / (df2 - 2) : 'Indefinido';
+    varianceVal = df2 > 4 ? (2 * df2 * df2 * (df1 + df2 - 2)) / (df1 * (df2 - 2) * (df2 - 2) * (df2 - 4)) : 'Indefinido';
+    stdVal = typeof varianceVal === 'number' ? Math.sqrt(varianceVal) : 'Indefinido';
+    formula = `F_{(df_1=${df1}, df_2=${df2})}`;
+
+    const maxPlot = 6;
+    const step = maxPlot / 50;
+    for (let pt = 0; pt <= maxPlot; pt += step) {
+      const pDensity = jStat.centralF.pdf(pt, df1, df2);
+      chartData.push({
+        x: Number(pt.toFixed(2)),
+        density: Number(pDensity.toFixed(5)),
+        isLower: pt <= xValPos,
+      });
+    }
   }
 
   return {
+    testName: `Distribución: ${distName}`,
     dist,
-    x,
+    distName,
+    isDiscrete,
+    x: xNum,
     pdf,
     pLessThanX: cdf,
+    pStrictlyLessThanX,
     pGreaterThanX: 1 - cdf,
+    pGreaterOrEqualX,
+    mean: meanVal,
+    variance: varianceVal,
+    std: stdVal,
+    zScore,
+    formula,
+    chartData,
   };
 }
+

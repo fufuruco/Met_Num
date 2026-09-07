@@ -16,7 +16,7 @@ async function parseApiResponse(res, defaultErrorMsg = 'Error en la solicitud') 
       }
     }
   }
-  
+
   if (!res.ok) {
     if (res.status === 502 || res.status === 503 || res.status === 504) {
       throw new Error('El servidor se está iniciando en la nube. Por favor espera 15 segundos y reintenta.');
@@ -218,7 +218,7 @@ export const authClient = {
           },
           body: JSON.stringify(workData),
         });
-      } catch (e) {}
+      } catch (e) { }
     }
     return newLocalWork;
   },
@@ -234,7 +234,7 @@ export const authClient = {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
-      } catch (e) {}
+      } catch (e) { }
     }
   },
 
